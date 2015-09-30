@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>jcjs Exampls</title>
+	<script src="js/cora.js"></script>
+</head>
+<body>
+	<div class="selector1">1</div>
+	<div class="selector1">1.1</div>
+	<div class="selector2">2</div>
+	<div class="selector3">3</div>
+	<script>
+		console.log(jc.version, $('.selector1'), $('.selector1').length);
+		console.log( jc.type('string'), jc.type([]), jc.type(null), jc.type($('.selector1')[0]) );
+		console.log((new Date()).addYears(3));
+	</script>
+</body>
+</html>
