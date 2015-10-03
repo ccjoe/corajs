@@ -1,19 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<title>jcjs Exampls</title>
-	<script src="js/cora.js"></script>
+    <meta charset="UTF-8">
+    <title>jcjs Exampls</title>
 </head>
+
 <body>
-	<div class="selector1">1</div>
-	<div class="selector1">1.1</div>
-	<div class="selector2">2</div>
-	<div class="selector3">3</div>
-	<script>
-		console.log(jc.version, $('.selector1'), $('.selector1').length);
-		console.log( jc.type('string'), jc.type([]), jc.type(null), jc.type($('.selector1')[0]) );
-		console.log((new Date()).addYears(3));
-	</script>
+    <div class="selector1">1</div>
+    <div class="selector1" id="s2">1.1
+        <span>
+			span
+		</span>
+    </div>
+    <div class="selector2" id="s2"><span>
+			span
+		</span><span>
+			span
+		</span></div>
+    <em></em>
+    <!-- <div class="selector3" widget="bones" data-options='{"test": "123"}'>3</div> -->
+    <div class="selector3" widget="timer" data-options='{"test": "123"}'></div>
+    <script src="js/cora.js"></script>
+    <script src="js/widget/bones.js"></script>
+    <script src="js/widget/timer.js"></script>
+    <script>
+    // console.log(cora.version, $('.selector1'), $('.selector1').length);
+    // console.log(cora.type('string'), cora.type([]), cora.type(null), cora.type($('.selector1')[0]));
+    // console.log((new Date()).addYears(3));
+    // console.log($('.selector1').hasClass(), 'abcdedf');
+    // console.log($('div').find('span'));
+    </script>
 </body>
+
 </html>
