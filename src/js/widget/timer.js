@@ -22,6 +22,7 @@
                       animation: movesix 1s steps(6, end) infinite;\
                       animation-play-state: paused;\
                     }\
+                    .animation-none{animation: none;}\
                     .second{animation-duration: 10s;}\
                     .tensecond{animation-duration: 60s;}\
                     .milisecond {animation-duration: 1s;}\
@@ -129,17 +130,17 @@
          _getNos: function(){
             return this.$dom.find('.numbers');
          },
-        /** @method Timer#stop 停止计时*/
+        /** @method Timer#stop -停止计时*/
         stop: function(){
-            this._getNos.css({'animation-play-state':'paused'});
+            this._getNos().removeClass('animation-none').css({'animation-play-state':'paused'});
         },      
-        /** @method Timer#start 开始计时*/
+        /** @method Timer#start -开始计时*/
         start: function(){
-            this._getNos.css({'animation-play-state':'running'});
+            this._getNos().removeClass('animation-none').css({'animation-play-state':'running'});
         },      
-        /** @method Timer#reset 重置计时*/
+        /** @method Timer#reset -重置计时*/
         reset: function(){
-            this._getNos.css({'animation':'none'});
+            this._getNos().addClass('animation-none');
         }
     };
 
@@ -171,13 +172,13 @@
             //this指向jQuery对象
             return this.each(function(item, i) {
                 //判断是否实例化过
-                var ui = $.data.get(item, "timer");
+                var ui = $.data.get(item);
                 if (!ui) {
                     var opts = $.extend({}, defaultOptions, typeof options === "object" ? options : {});
                     //ui 即为实例化过的组件
                     ui = new Timer(opts, item);
                     //实例化后在上面添加标识;
-                    $.data.set(item, "timer", ui);
+                    $.data.set(item,  ui);
                 }
 
                 //如果参数为字符串，或函数则 ui即Tab实例上的方法执行在Tab上,参数为options对象

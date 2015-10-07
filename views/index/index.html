@@ -8,7 +8,7 @@
 
 <body>
     <div class="selector1">1</div>
-    <div class="selector1" id="s2">1.1
+    <div class="selector1">1.1
         <span>
 			span
 		</span>
@@ -19,12 +19,27 @@
 			span
 		</span></div>
     <em></em>
-    <!-- <div class="selector3" widget="bones" data-options='{"test": "123"}'>3</div> -->
+    <div class="selector2" widget="bones" data-options='{"test": "123"}'>3</div>
     <div class="selector3" widget="timer" data-options='{"test": "123"}'></div>
+    <button id="stop">stop</button>
+    <button id="start">start</button>
+    <button id="reset">reset</button>
     <script src="js/cora.js"></script>
     <script src="js/widget/bones.js"></script>
     <script src="js/widget/timer.js"></script>
     <script>
+
+    	var widget = Cora.data.get($('.selector3')[0][0]);
+    	document.getElementById('stop').onclick = function(){
+    		widget.stop();
+    	};  
+    	document.getElementById('start').onclick = function(){
+    		widget.start();
+    	};
+    	document.getElementById('reset').onclick = function(){
+    		widget.reset();
+    	};
+
     // console.log(cora.version, $('.selector1'), $('.selector1').length);
     // console.log(cora.type('string'), cora.type([]), cora.type(null), cora.type($('.selector1')[0]));
     // console.log((new Date()).addYears(3));

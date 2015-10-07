@@ -1,17 +1,4 @@
-Skip to content
-This repository  
-Search
-Pull requests
-Issues
-Gist
- @ccjoe
- Watch 18
-  Unstar 228
-  Fork 23 kupriyanenko/jbone
-Branch: master  jbone/dist/jbone.js
-@kupriyanenkokupriyanenko on 13 Aug 1.1.1
-2 contributors @kupriyanenko @redaxmedia
-RawBlameHistory     1053 lines (859 sloc)  24.9 KB
+
 /*!
  * jBone v1.1.1 - 2015-08-13 - Library for DOM manipulation
  *
@@ -1064,5 +1051,3 @@ else if (typeof define === "function" && define.amd) {
 }
 
 }(window));
-Status API Training Shop Blog About Pricing
-© 2015 GitHub, Inc. Terms Privacy Security Contact Help

@@ -13,7 +13,6 @@
      * 没有执行环境时指向window, call后执行在Bones对象上
      */
     function initBones(opts) {
-        console.log(opts, 'opts');
     }
     /**
      * 此构造函数一般不直接调用，是用来实现插件化的中间过程；如果注册了window.Bones，则可以直接调用以便灵活处理
