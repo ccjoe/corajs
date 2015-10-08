@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @author sfliu
  * Copyright(C) 2015 - 2016, All rights reserved.
  * Date: 2015-09-31
@@ -66,6 +66,7 @@
      * @return {string} 返回变量的类型
      * @example
      * 返回的类型有：'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'error', 'undefined', HTMLCollection, HTML(TagName)Element
+     * Cora.type(NaN)  => number
      */
     Cora.type = function(obj) {
         if (obj === null) return String(obj);
@@ -89,23 +90,37 @@
      * @param {var} eth 待检测的变量
      * @return {boolean} 是否为指定的Type
      * @example
-     * 方法列表有：'isBoolean', 'isNumber', 'isString', 'isFunction', 'isArray', 'isDate', 'isRegexp', 'isError', 'isUndefined', isNull, isHTML
+     * 方法列表有：'isBoolean', 'isNumber', 'isString', 'isFunction', 'isArray', 'isDate', 'isRegexp', 'isError', 'isUndefined', isNull, isNaN, isHTML
      */
-    _g.types.forEach(function(item, i) {
-        Cora['is' + _g.capitalize(item)] = function(eth) {
-            return (Cora.type(eth) === item);
-        }
-        Cora.isHTML = function(eth) {
-            return (!!~Cora.type(eth).indexOf('HTML'))
-        }
-    });
 
+	for (var gi = 0; gi < _g.types.length; gi++) {
+		(function(i) {
+			var item = _g.types[i];
+			Cora['is' + _g.capitalize(item)] = function(eth) {
+				return (Cora.type(eth) === item);
+			};
+			Cora.isHTML = function(eth) {
+				return (!!~Cora.type(eth).indexOf('HTML'))
+			};
+			Cora.isNaN = function(eth){
+				return Cora.isNumber(eth) && isNaN(eth);
+			}
+		})(gi);
+	}
+
+	//Array.prototype.slice.call => https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
+	//Object.keys  => Polyfill From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+	(function(){var a=Array.prototype.slice;try{a.call(document.documentElement)}catch(b){Array.prototype.slice=function(h,d){d=(typeof d!=="undefined")?d:this.length;if(Object.prototype.toString.call(this)==="[object Array]"){return a.call(this,h,d)}var f,j=[],e,c=this.length;var k=h||0;k=(k>=0)?k:Math.max(0,c+k);var g=(typeof d=="number")?Math.min(d,c):c;if(d<0){g=c+d}e=g-k;if(e>0){j=new Array(e);if(this.charAt){for(f=0;f<e;f++){j[f]=this.charAt(k+f)}}else{for(f=0;f<e;f++){j[f]=this[k+f]}}}return j}}if(!Object.keys){Object.keys=function(){var c=Object.prototype.hasOwnProperty,f=!({toString:null}).propertyIsEnumerable("toString"),e=["toString","toLocaleString","valueOf","hasOwnProperty","isPrototypeOf","propertyIsEnumerable","constructor"],d=e.length;return function(j){if(typeof j!=="object"&&(typeof j!=="function"||j===null)){throw new TypeError("Object.keys called on non-object")}var h=[],k,g;for(k in j){if(c.call(j,k)){h.push(k)}}if(f){for(g=0;g<d;g++){if(c.call(j,e[g])){h.push(e[g])}}}return h}}}})();
+   
     /**
      * 将类数组对象转化为数组
      * @method Cora.toArray
      * @param {arrayLike} arrayLike 类数组对象
      * @return {array} 返回真正的数组对象
+     * @todo ie<9需要支持 
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Browser_compatibility
      */
+
     Cora.toArray = function(arrayLike) {
         return [].slice.call(arrayLike);
     };
@@ -126,6 +141,72 @@
             }
         }
         return a;
+    };
+    /**
+     * 判断对象与数组是否相等，内部采取深度递归全等对比
+     * @method Cora.objectEqual
+     * @param {object} 待对比的对象
+     * @param {object} 待对比的对象
+     * @return {boolean} 返回是否相等
+     */
+    Cora.objectEqual = function (a, b) {
+        //遍历a与b的类型是否相同
+        if(Cora.type(a) !==Cora.type(b)){
+        	return false;
+        }
+    	//遍历a与b的长度是否相等
+        if(Object.keys(a).length !== Object.keys(b).length){
+        	return false;
+        }
+    	//先遍历b中所有属性与A是否===
+    	for (var i in b) {
+            bival = b[i];
+            if (bival && Cora.isObject(bival)) {
+                if(!Cora.objectEqual(a[i], bival)){
+                	return false;
+                }
+            } else {
+                if(a[i] != bival){
+                	return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
+    Cora.equal = function(a, b){
+    	var type = Cora.type(a);
+    	switch (type) {   		
+    		case 'object':
+    			return Cora.objectEqual(a, b);
+    		    break;
+    		default:
+    			return a === b;
+    			break; 
+    	}
+    };
+
+    /**
+     * 混合多个对象
+     * @method Cora.extend
+     * @param {object} 待合并的对象
+     * @return {object} 返回变量的类型
+     * @todo 性能有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
+     * 对比 https://github.com/sindresorhus/object-assign相关优化
+     */
+    Cora.extend = Object.assign || function() {
+        var args = Cora.toArray(arguments);
+        if (!args.length) {
+            return {};
+        } else if (args.length === 1) {
+            return args[0];
+        } else {
+            for (var i = 0; i < args.length; i++) {
+                args[0] = Cora.merge(args[0], args[i]);
+            }
+            return args[0];
+        }
     };
 
     Cora.log = (function($) {
@@ -262,27 +343,6 @@
         return log;
     })();
     /**
-     * 混合多个对象
-     * @method Cora.extend
-     * @param {object} 待合并的对象
-     * @return {object} 返回变量的类型
-     * @todo 性能有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
-     */
-    Cora.extend = Object.assign || function() {
-        var args = Cora.toArray(arguments);
-        if (!args.length) {
-            return {};
-        } else if (args.length === 1) {
-            return args[0];
-        } else {
-            for (var i = 0; i < args.length; i++) {
-                args[0] = Cora.merge(args[0], args[i]);
-            }
-            return args[0];
-        }
-    };
-
-    /**
      * 探测浏览器类型
      * @method Cora.browse
      * @return {string} 返回浏览器类型字符串
@@ -384,6 +444,14 @@
              */
             get: function(element) {
                 return store[element.myCustomDataTag];
+            },
+            /**
+             * 删除数据绑定
+             * @method Cora.data.del
+             * @param {object} element 绑定数据的元素
+             */
+            del: function(element){
+            	store[element.myCustomDataTag] = void 0;
             }
         };
     }());
@@ -437,9 +505,34 @@
      * @static
      */
     Cora.extend(Array.prototype, {
+        //all brower Array.prototype.indexOf || 
+    	/** @method Array#forEach */
+    	forEach: Array.prototype.forEach || function forEach( callback, thisArg ) {
+		    var T, k;
+		    if ( this == null ) {
+		      throw new TypeError( "this is null or not defined" );
+		    }
+		    var O = Object(this);
+		    var len = O.length >>> 0; // Hack to convert O.length to a UInt32
+		    if ( {}.toString.call(callback) !== "[object Function]" ) {
+		      throw new TypeError( callback + " is not a function" );
+		    }
+		    if ( thisArg ) {
+		      T = thisArg;
+		    }
+		    k = 0;
+		    while( k < len ) {
+		      var kValue;
+		      if ( Object.prototype.hasOwnProperty.call(O, k) ) {
+		        kValue = O[ k ];
+		        callback.call( T, kValue, k, O );
+		      }
+		      k++;
+		    }
+		  },
     	//all brower Array.prototype.indexOf || 
     	/** @method Array#indexOf */
-    	indexOf : function(valToFind) {
+    	indexOf : Array.prototype.indexOf || function(valToFind) {
 			    var foundIndex = -1;
 			    for (var index = 0; index < this.length; index++) {
 			        if (this[index] === valToFind) {
@@ -450,14 +543,14 @@
 			    return foundIndex;
 			},
     	/** @method Array#filter */
-			filter: Array.prototype.filter || function (arr, filterfn) {
-				var validValues = [];
-				    for (var index = 0; index < arr.length; i++) {
-				        if (filterfn(theArray[index])) {
-				            validValues.push(theArray[index]);
-				        }
-				    }
-				}
+		filter: Array.prototype.filter || function (arr, filterfn) {
+			var validValues = [];
+		    for (var index = 0; index < arr.length; i++) {
+		        if (filterfn(theArray[index])) {
+		            validValues.push(theArray[index]);
+		        }
+		    }
+		}
     });
     /**
      * String日期的扩展方法
@@ -543,56 +636,91 @@
      * @namespace Date
      * @constructs Date
      */
+    /**
+     * +y年后的时间
+     * @method Date#addYears Date#addMonth Date#addDays Date#addHours Date#addMinutes Date#addSeconds
+     * @param {integer} num 需要加上的特定数字
+     * @return {Date} 返回加好年份的日期对象
+     * 方法列表有：addYears addMonth addDays addHours addMinutes addSeconds
+     */
+    ['Year', 'Month', 'Days', 'Hours', 'Minutes', 'Seconds'].forEach(function (item) {
+    	Date.prototype['add'+item] = function(num){
+    		if(item === 'Days') item = 'Date';
+    		var td = new Date(+this);
+    		td['set'+item](td['get'+ (item==='Year'?'FullYear':item)]()+num);
+    		return td;
+    	}
+    });
+
     Cora.extend(Date.prototype, {
         /**
-         * +y年后的时间
-         * @method Date#addYears
-         * @param {integer} y 需要加上的特定年份
-         * @return {Date} 返回加好年份的日期对象
-         */
-        addYears: function(y) {
-            var d = new Date(+this);
-            d.setYear(d.getFullYear() + y);
-            return d;
-        },
-        /**
-         * 加上特定的月份
-         * @method Date#addMonths
-         * @param {integer} m 需要加上的特定年份
-         * @return {Date} 返回加好年份的日期对象
-         */
-        addMonth: function(m) {
-
-        },
-        /**
          * 将时长转化为time格式
-         * @method Date#addMonths
-         * @param {integer} second 以毫秒计的时长,不能大于24小时
-         * @return {Date} 返回加好年份的日期对象
+         * @method Date#countdownFormat
+         * @param {integer} second 以毫秒计的时长
+         * @return {string} 返回固定格式的字符串
          * @example 
-         * getFormatTime(3600*1000*23) => "23:00:00"
+         * getFormatTime(3600*1000*23) => "3天 23:00:00"
          */
-        getFormatTime: function (s){
-         	if(s<1000) s = 0;
-          var h=0,m=0,s=s/1000;
-          if(s>=60){
-            m = Math.floor(s/60);
-            s = s%60;
-            if(m >= 60){
-                h = Math.floor(m/60);
-                m = m%60;
-            }
-          } 
-          function tf(num){
-	            return (num<10) ? (0+''+num) : num;
-	        }
-          return tf(h)+':' + tf(m) + ':' + tf(s);
-        },
+		countdownFormat: function(endTime) {
+			var remainTime = new Date(endTime) - new Date(+this),
+				remainDays = Math.floor(remainTime / (3600000 * 24)),
+				s = remainTime % (3600000 * 24);
+
+			var daystr = remainDays ? remainDays + '天 ' : '';
+			if (s < 1000) s = 0;
+			var h = 0,
+				m = 0,
+				s = Math.floor(s / 1000);
+			if (s >= 60) {
+				m = Math.floor(s / 60);
+				s = s % 60;
+				if (m >= 60) {
+					h = Math.floor(m / 60);
+					m = m % 60;
+				}
+			}
+			function tf(num) {
+				return (num < 10) ? (0 + '' + num) : num;
+			}
+			return daystr + tf(h) + ':' + tf(m) + ':' + tf(s);
+		},
         //性能不如上面
         // getFormatTime: function(millsecond) {
         // 	return new Date(millsecond-3600*8*1000).toTimeString().match(/^(\d{2}\:){2}\d{2}/)[0];
         // }
     });
+    /**
+     * 事件
+     * @namespace Cora.event
+     * @todo
+     */
+    Cora.event = {
+	    /**
+         * 为单个元素绑定事件
+         * @method Cora.event.reg 
+         * @param {element} target 待绑定的元素
+         * @param {eventType} type 触发的事件类型
+         * @param {function} callback 触发回调
+         */
+    	reg: function (target, type, callback) {
+		    var listenerMethod = target.addEventListener || target.attachEvent,
+		        eventName = target.addEventListener ? type : 'on' + type;
+		    listenerMethod(eventName, callback, false);
+		},
+	    /**
+         * 为单个元素解绑事件
+         * @method Cora.event.reg 
+         * @param {element} target 待绑定的元素
+         * @param {eventType} type 解绑触发的事件类型
+         * @param {function} callback 触发回调
+         */
+		unreg: function (target, type, callback) {
+		    var removeMethod = target.removeEventListener || target.detachEvent,
+		        eventName = target.removeEventListener ? type : 'on' + type;
+                console.log('removeMethod'+ eventName);
+		    removeMethod(eventName, callback);
+		}
+    }
 
     /**
      * @lends Cora.prototype
@@ -810,11 +938,80 @@
                 item.insertAdjacentHTML(posi, elem);
             });
         },
+        /** 
+         * 在元素上设置绑定数据或获取数据
+         * @method Cora#data
+         * @param {object} elem被添加的数据对象
+         */
+        data: function (set) {
+        	var data = Cora.data;
+        	if(!set){
+        		return data.get(this[0][0])
+        	}else{
+        		data.set(this[0][0], set);
+        	}
+        },
+        // Cora.objectEqual
+        contains: function(elem){
+        	
+        },
+	    /**
+         * 为cora元素绑定事件
+         * @method Cora#on
+         * @param {eventType} type 触发的事件类型
+         * @param {string} selector 待绑定的元素的选择器
+         * @param {function} callback 触发回调
+         * @todo 1: dom.contains	2: fn.bind(sth)
+         */
+        on: function(eventType, selector, callback){
+        	var _t = this;
+        	//没有selector时为每个元素绑定事件
+        	if(Cora.isFunction(selector)){
+        		callback = selector;
+        		_t.each(function (item) {
+        			Cora.event.reg(item, eventType, callback);
+        		});
+        		return _t;
+        	}
+        	// 有selector时则为事件代理
+        	Cora.event.reg(this[0][0], eventType, function(event) {
+        		var target = event.target || event.srcElement,
+        			targetContainer = _t.find(selector);
+        			targetContainer.each(function(item){
+        				if(item.contains(target)){
+        					callback(event, target);
+        				}
+        			});
+        	});
+            return _t;
+
+    // if (event.stopPropgation) {
+    //     event.stopPropagation();
+    // }
+    // else {
+    //     event.cancelBubble = true;
+    // }
+        },  
+        /**
+         * 为cora元素绑定事件
+         * @method Cora#on
+         * @param {eventType} type 触发的事件类型
+         * @param {string} selector 待绑定的元素的选择器
+         * @param {function} callback 触发回调
+         * @todo 1: dom.contains	2: fn.bind(sth)
+         */
+        off: function(eventType, callback){
+    		this.each(function (item) {
+                console.log(item, 'item');
+    			Cora.event.unreg(item, eventType, callback);
+    		});
+    		return this;
+    	}
+        
 
     };
 
     Cora.prototype._init.prototype = Cora.prototype;
-
     //----------模板引擎
 
     //----------模块化组件注册(UI组件)
@@ -829,7 +1026,7 @@
         $.widgetize = function(widget) {
             var $widget = $(widget);
             widgetName = $widget.attr('widget'),
-                widgetArgs = JSON.parse($widget.attr('data-options'));
+            widgetArgs = JSON.parse($widget.attr('data-options'));
             opts = widgetArgs ? widgetArgs : {};
 
             $.log('执行插件: [' + widgetName + ']', {type: 'info'});
@@ -855,6 +1052,18 @@
                 Cora.widgetize(item);
             });
         };
+        /**
+         * 在Corajs上指定元素上卸载组件
+         * @method Cora.unWidget
+         * @param {element} elem 卸载组件所指定的元素
+         */
+        $.unWidget = function(elem){
+        	// 卸载已缓存实例
+        	$.data.del(elem);
+        	//卸载已运行实例
+        	elem.innerHTML = '';
+        }
+
     })(Cora)
 
 
