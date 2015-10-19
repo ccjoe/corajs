@@ -509,7 +509,7 @@
      * @static
      */
     Cora.extend(Array.prototype, {
-        //all brower Array.prototype.indexOf || 
+        //all brower
     	/** @method Array#forEach */
     	forEach: Array.prototype.forEach || function forEach( callback, thisArg ) {
 		    var T, k;
@@ -534,7 +534,7 @@
 		      k++;
 		    }
 		  },
-    	//all brower Array.prototype.indexOf || 
+    	//all brower
     	/**
          * 查找元素下标  (只能查找简单类型) 
          * @method Array#indexOf 
@@ -549,8 +549,17 @@
 			    }
 			    return foundIndex;
 			},
+    	/** @method Array#filter */
+		filter: Array.prototype.filter || function (arr, filterfn) {
+			var validValues = [];
+		    for (var index = 0; index < arr.length; i++) {
+		        if (filterfn(theArray[index])) {
+		            validValues.push(theArray[index]);
+		        }
+		    }
+		},
         /**
-         * 查找元素或对象下标  (查找任意类型,不包括NaN) 
+         * 查找元素或对象下标  (indexOf升级版  查找任意类型,不包括NaN) 
          * @method Array#indexOfObj 
          * @return {number} 下标
          */
@@ -571,15 +580,24 @@
         has: function(any){
             return this.indexOfObj(any) !== -1;
         },
-    	/** @method Array#filter */
-		filter: Array.prototype.filter || function (arr, filterfn) {
-			var validValues = [];
-		    for (var index = 0; index < arr.length; i++) {
-		        if (filterfn(theArray[index])) {
-		            validValues.push(theArray[index]);
-		        }
-		    }
-		}
+        /**
+         * 查找元素或对象下标  (filter升级版  查找任意类型,不包括NaN) 
+         * @method Array#indexOfObj 
+         * @return {number} 下标
+         * @todo
+         */        
+        filterObj: function(any, filterfn){
+
+        },
+        //去掉数组中某元素或对象，(下标会变动);
+        /**
+         * 查找元素或对象下标  (filter升级版  查找任意类型,不包括NaN) 
+         * @method Array#remove 
+         * @return {array} 返回原数组
+         */  
+        remove: function(any){
+            return this.splice(this.indexOfObj(any),1);
+        }
     });
     /**
      * String日期的扩展方法
@@ -754,21 +772,30 @@
 
     //新增发布订阅模式(publisher-subscriber)
     var Ps = (function(){
-        var Publisher = function(){
+        var Pub = function(){
             //管理订阅者, 这里的订阅者是一些function,
-            this.subscribers = [];  
+            this.subs = [];  
         };
 
         Publisher.prototype.deliver = function(data){
             // 有deliver时订阅者即执行
-            this.subscribers.forEach(function(sub){
+            this.subs.forEach(function(sub){
                 sub(data);
             });
             return this;
         };
 
-        Function.prototype.subscriber = function(publisher){
-            // publisher.subscribers
+        Function.prototype.sub = function(pub){
+            var isExist = pub.subs.has(this);
+            if(!isExist){
+                pub.subs.push(this);
+            }
+            return this;
+        };        
+
+        Function.prototype.unsub = function(pub){
+            pub.subs.remove(this);
+            return this;
         };
     });
 
