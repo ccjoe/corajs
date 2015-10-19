@@ -144,6 +144,7 @@
     };
     /**
      * 判断对象与数组是否相等，内部采取深度递归全等对比
+     * @desc 这里认为空对象与空对象，空数组与空数组相等，相同内容的对象与数组相等, NaN与NaN不相等
      * @method Cora.objectEqual
      * @param {object} 待对比的对象
      * @param {object} 待对比的对象
@@ -171,14 +172,17 @@
                 }
             }
         }
-
+        if(Cora.isNaN(a) || Cora.isNaN(b)){
+            return false;
+        }
         return true;
     };
 
     Cora.equal = function(a, b){
     	var type = Cora.type(a);
     	switch (type) {   		
-    		case 'object':
+            case 'object':
+            case 'array':
     			return Cora.objectEqual(a, b);
     		    break;
     		default:
@@ -531,7 +535,10 @@
 		    }
 		  },
     	//all brower Array.prototype.indexOf || 
-    	/** @method Array#indexOf */
+    	/**
+         * 查找元素下标  (只能查找简单类型) 
+         * @method Array#indexOf 
+         */
     	indexOf : Array.prototype.indexOf || function(valToFind) {
 			    var foundIndex = -1;
 			    for (var index = 0; index < this.length; index++) {
@@ -542,6 +549,28 @@
 			    }
 			    return foundIndex;
 			},
+        /**
+         * 查找元素或对象下标  (查找任意类型,不包括NaN) 
+         * @method Array#indexOfObj 
+         * @return {number} 下标
+         */
+        indexOfObj: function(any){
+            var hasIt = -1;
+            for(var i=0; i<this.length; i++){
+                if(Cora.equal(this[i], any)){
+                    hasIt = i;
+                    break;
+                }
+            }
+            return hasIt;
+        }, /**
+         * 查找是否包含元素或对象  (查找任意类型,不包括NaN) 
+         * @method Array#has 
+         * @return {boolean} true/false 存在不存在
+         */
+        has: function(any){
+            return this.indexOfObj(any) !== -1;
+        },
     	/** @method Array#filter */
 		filter: Array.prototype.filter || function (arr, filterfn) {
 			var validValues = [];
