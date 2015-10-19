@@ -594,6 +594,27 @@
         // }
     });
 
+
+    //新增发布订阅模式(publisher-subscriber)
+    var Ps = (function(){
+        var Publisher = function(){
+            //管理订阅者, 这里的订阅者是一些function,
+            this.subscribers = [];  
+        };
+
+        Publisher.prototype.deliver = function(data){
+            // 有deliver时订阅者即执行
+            this.subscribers.forEach(function(sub){
+                sub(data);
+            });
+            return this;
+        };
+
+        Function.prototype.subscriber = function(publisher){
+            // publisher.subscribers
+        };
+    });
+
     /**
      * @lends Cora.prototype
      */
