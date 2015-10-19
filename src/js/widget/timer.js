@@ -113,7 +113,6 @@
          * 最终执行于Timer实例的参列
          * @member {Object} Timer~opts
          */
-        
         this.opts = $.extend({}, defaultOptions, opts); //再混合一次的目的是防止使用window.Timer调用
         /**
          * 插件根元素  
@@ -200,8 +199,6 @@
     var defaultOptions = {
         type: 'timer-count',
         show: ['hour', 'minute', 'second', 'milisecond'],
-        /** @callback */
-        hideTimer: function() {} //隐藏后回调
     }
 
     /**
