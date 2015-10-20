@@ -246,7 +246,7 @@
          *    color: 'red',
          *    size: 'large',
          *    shadow: true,
-         *		rainbow: false,
+         *	  rainbow: false,
          *    css: "text-shadow: 0 1px 0 #ccc,0 2px 0 #aaa"
          * });
          * 仅支持一次输出一个对象
@@ -276,7 +276,7 @@
                       opts.color = '#999';
                       break;
                   case 'warn':
-                      opts.color = 'yellow';
+                      opts.color = 'orange';
                       break;
                   case 'error':
                       opts.color = 'pink';
@@ -795,10 +795,11 @@
      * function subNo2(data, name){
      *      console.log('subFn2订阅到'+name+'对象，将接受到消息，为：', data);
      * }
-     * subNo1.sub('pubNO1');   //subNo1订阅到 pubNO1
-     * subNo2.sub('pubNO1');   //subNo2订阅到 pubNO1
      * Cora.PS.add('pubNO2');  //新增发布者 pubNO2;
+     * subNo1.sub('pubNO1');   //subNo1订阅到 pubNO1
+     * subNo2.sub('pubNO1').sub('pubNO2');   //subNo2订阅到 pubNO1
      * Cora.PS.send('pubNO1', {data:123}) //pubNO1发布消息
+     * Cora.PS.send('pubNO2', {data:'pubNo2 From!'}) //pubNO1发布消息
      * @todo 需要厘清发布订阅机制创建多PS对象还是一个PS对象维护多个子发布者机制更好？
      * @done 解决为一个PS对象，管理所有发布订阅对象
      */
@@ -821,18 +822,21 @@
         };
 
         /**
-         * 创建发布者，并且有订阅者时绑定传入的订阅者
+         * 创建新增发布者，并且有订阅者时绑定传入的订阅者
          * 如果发布者已存在，则为设置发布者
-         * @method Cora.PS#add
+         * @method Cora.PS#addPub
          * @param {string} name 发布者名称或标识
          * @param {function} sub1, sub2, ... 订阅者
          * @return {object} Cora.PS 对象
          */
         PubSub.prototype.add = function(name /*, sub1, sub2...*/){
             var subs = this.get(name) || [];
+            if(subs.length){
+                Cora.log('已存在'+name+'发布者,将会重置订阅者', {type: 'warn'});
+            }
             var addsubs = Cora.toArray(arguments);
                 addsubs.shift();
-            this.set(name, subs.concat(addsubs));
+            this.set(name, addsubs);
             return this;
         };
         /**
