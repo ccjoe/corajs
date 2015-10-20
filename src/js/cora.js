@@ -67,6 +67,7 @@
      * @example
      * 返回的类型有：'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'error', 'undefined', HTMLCollection, HTML(TagName)Element
      * Cora.type(NaN)  => number
+     * @todo NodeList HTMLCollection 判断均为 HTMLCollection, 在IE8 为object
      */
     Cora.type = function(obj) {
         if (obj === null) return String(obj);
@@ -82,6 +83,10 @@
         if (type === '[object Object]') type = obj + '';
         var arr = type.match(/^\[object (HTML\w+)\]$/);
         if (arr) return arr[1];
+
+        var arr2 = type.match(/^\[object (NodeList)\]$/);
+        if (arr2) return 'HTMLCollection';
+
         return 'object';
     };
     /**
@@ -102,6 +107,11 @@
 			Cora.isHTML = function(eth) {
 				return (!!~Cora.type(eth).indexOf('HTML'))
 			};
+            
+            Cora.isHTMLCollection = function(elems){
+                return Cora.type(elems) === 'HTMLCollection';
+            };
+
 			Cora.isNaN = function(eth){
 				return Cora.isNumber(eth) && isNaN(eth);
 			}
@@ -342,6 +352,36 @@
 
         return log;
     })();
+
+    //双缓冲技术,减少对视图的冗余刷新 @todo应用场景
+    Cora.Buffer = (function(){
+        var Buffer = function () {
+            this.queue = [];    //队列
+        };
+
+        Buffer.prototype = {
+            setqueue: function(queue){
+                this.queue = queue;
+            },
+            render: function () {
+                //没有被锁的情况下执行渲染
+                if (!this.locked) {
+                    this.flush();
+                }
+            },
+            flush: function () {
+                for (var i = 0, sub; sub = this.queue[i++]; ) {
+                    sub.update && sub.update(); //执行队列
+                }
+                this.locked = 0;
+                this.queue = [];
+            }
+        }
+
+        var buffer = new Buffer();
+        return buffer;
+    })();
+
     /**
      * 探测浏览器类型
      * @method Cora.browse
@@ -722,6 +762,10 @@
 		}
     }
 
+
+    // 解决移动端模拟双击、长按、左右滑动、缩放的问题
+    
+    
     /**
      * @lends Cora.prototype
      */
@@ -730,7 +774,7 @@
         /**
          * @method Cora~_init
          * @private
-         * @todo 传入html元素时返回其
+         * @todo 传入array时注意有无这种情况，区分传入HTMLCollection(NodeList)
          */
         _init: function(selector) {
             if (!selector)
@@ -749,6 +793,10 @@
             //dom array
             if (type === 'array') {
                 return this._makeCora(selector);
+            }            
+            //判断为原生html集合时
+            if (type === 'HTMLCollection') {
+                return this._makeCora(Cora.toArray(selector));
             }
 
             var selectorType = 'querySelectorAll';
@@ -826,6 +874,28 @@
             var selector = this.selector ? this.selector + ' ' + selector : selector;
             var newfdom = Cora(domarr);
             return newfdom;
+        },        
+        /** 
+         * 在cora对象里添加元素
+         * @method Cora#add
+         * @param {element} elem 元素，可以是单个元素，Cora对象元素, NodeList;
+         * @return {Cora} 返回Cora对象
+         * @todo 传入NodeList时
+         */
+        add: function(elem) {
+            if(Cora.isHTML(elem)){
+                this[0].push(elem);
+            }
+
+            if(elem instanceof Cora){
+                this[0] = this[0].concat(elem[0]);
+            }
+
+            if(Cora.isHTMLCollection(elem)){
+                var elems = Cora.toArray(elem);
+                this[0].concat(elems);
+            }
+            return this;
         },
         /** 
          * 判断元素是否具有某个class
@@ -974,15 +1044,20 @@
         		return _t;
         	}
         	// 有selector时则为事件代理
-        	Cora.event.reg(this[0][0], eventType, function(event) {
-        		var target = event.target || event.srcElement,
-        			targetContainer = _t.find(selector);
-        			targetContainer.each(function(item){
-        				if(item.contains(target)){
-        					callback(event, target);
-        				}
-        			});
-        	});
+
+            _t.each(function(item, i){
+                Cora.event.reg(item, eventType, function(event) {
+                    console.log('always happen anywhere');
+                    var target = event.target || event.srcElement,
+                    $targetContainer = Cora(item).find(selector);
+                    $targetContainer.each(function(item){
+                        if(item.contains(target)){
+                            callback(event, target);
+                        }
+                    });
+                });
+            });
+        	
             return _t;
 
     // if (event.stopPropgation) {
