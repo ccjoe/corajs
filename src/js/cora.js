@@ -21,7 +21,7 @@
      * @namespace
      * @constructs Cora
      * @static
-     * @return {dom} 返回的对象即Cora对象，$(selector)[0]指向原生HTMLElement的数组;
+     * @return {Object} 返回的对象即Cora对象，$(selector)[0]指向原生HTMLElement的数组;
      * @desc 选择器 compatibility > ie81
      * @example
      * Cora(selector);
@@ -32,8 +32,8 @@
      * 选择器 $(selector)[0][0] 的值是原生 HTML*Element, 是第一个元素
      */
     function Cora(selector) {
-        return new fn._init(selector);
-    };
+        return new fn.init(selector);
+    }
     /**
      * @version Cora.version
      * @method Cora.version
@@ -62,7 +62,7 @@
     /**
      * 判断变量的类型, 判断dom类型时,用querySelectorAll集合为object
      * @method Cora.type
-     * @param {var} obj 待检测的变量
+     * @param {type} obj 待检测的变量
      * @return {string} 返回变量的类型
      * @example
      * 返回的类型有：'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'error', 'undefined', HTMLCollection, HTML(TagName)Element
@@ -71,8 +71,8 @@
     Cora.type = function(obj) {
         if (obj === null) return String(obj);
         var tobj = {},
-            types = _g.types;
-        type = Object.prototype.toString.call(obj);
+            types = _g.types,
+            type = Object.prototype.toString.call(obj);
 
         for (var i = 0; i < types.length; i++) {
             tobj['[object ' + _g.capitalize(types[i]) + ']'] = types[i];
@@ -87,7 +87,7 @@
     /**
      * 判断变量的类型, 判断dom类型时,用querySelectorAll集合为object
      * @method Cora.is[Type]
-     * @param {var} eth 待检测的变量
+     * @param {object} eth 待检测的变量
      * @return {boolean} 是否为指定的Type
      * @example
      * 方法列表有：'isBoolean', 'isNumber', 'isString', 'isFunction', 'isArray', 'isDate', 'isRegexp', 'isError', 'isUndefined', isNull, isNaN, isHTML
@@ -115,7 +115,7 @@
     /**
      * 将类数组对象转化为数组
      * @method Cora.toArray
-     * @param {arrayLike} arrayLike 类数组对象
+     * @param {array} arrayLike 类数组对象
      * @return {array} 返回真正的数组对象
      * @todo ie<9需要支持 
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Browser_compatibility
@@ -127,17 +127,20 @@
     /**
      * Copy混合对象
      * @method Cora.merge
-     * @param {object} 待合并的对象
+     * @param {object} a 待合并的对象
+     * @param {object} b 待合并的对象
      * @return {object} 返回合并后的第一个对象
      */
     Cora.merge = function(a, b) {
         for (var i in b) {
-            bival = b[i];
-            if (bival && Cora.isObject(bival)) {
-                a[i] = a[i] || {};
-                Cora.merge(a[i], bival);
-            } else {
-                a[i] = bival;
+            if(b.hasOwnProperty(i)){
+                bival = b[i];
+                if (bival && Cora.isObject(bival)) {
+                    a[i] = a[i] || {};
+                    Cora.merge(a[i], bival);
+                } else {
+                    a[i] = bival;
+                }
             }
         }
         return a;
@@ -146,8 +149,8 @@
      * 判断对象与数组是否相等，内部采取深度递归全等对比
      * @desc 这里认为空对象与空对象，空数组与空数组相等，相同内容的对象与数组相等, NaN与NaN不相等
      * @method Cora.objectEqual
-     * @param {object} 待对比的对象
-     * @param {object} 待对比的对象
+     * @param {object} a 待对比的对象
+     * @param {object} b 待对比的对象
      * @return {boolean} 返回是否相等
      */
     Cora.objectEqual = function (a, b) {
@@ -161,21 +164,20 @@
         }
     	//先遍历b中所有属性与A是否===
     	for (var i in b) {
-            bival = b[i];
-            if (bival && Cora.isObject(bival)) {
-                if(!Cora.objectEqual(a[i], bival)){
-                	return false;
-                }
-            } else {
-                if(a[i] != bival){
-                	return false;
+            if(b.hasOwnProperty(i)) {
+                var bival = b[i];
+                if (bival && Cora.isObject(bival)) {
+                    if (!Cora.objectEqual(a[i], bival)) {
+                        return false;
+                    }
+                } else {
+                    if (a[i] != bival) {
+                        return false;
+                    }
                 }
             }
         }
-        if(Cora.isNaN(a) || Cora.isNaN(b)){
-            return false;
-        }
-        return true;
+        return !(Cora.isNaN(a) || Cora.isNaN(b));
     };
 
     Cora.equal = function(a, b){
@@ -196,7 +198,7 @@
      * @method Cora.extend
      * @param {object} 待合并的对象
      * @return {object} 返回变量的类型
-     * @todo 性能有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
+     * @todo 是否有性能问题有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
      * 对比 https://github.com/sindresorhus/object-assign相关优化
      */
     Cora.extend = Object.assign || function() {
@@ -250,7 +252,7 @@
          * 仅支持一次输出一个对象
          */
         var log = function(output, opts) {
-          var format = '',
+          var format = '';
               opts = opts || {};
           var type = opts.type = opts.type || 'log';
           var hasColor = (void 0 !== opts.color);
@@ -352,10 +354,10 @@
      * @return {string} 返回浏览器类型字符串
      */
     Cora.browse = function() {
-        var blist = {
-
-        };
-        return blist;
+        //var blist = {
+        //
+        //};
+        //return blist;
     };
 
     /**
@@ -365,8 +367,7 @@
      */
     Cora.ready = function(func) {};
     Cora.url = (function(){
-    		return { }
-    	  //1=>URL,
+        //1=>URL,
         //2=>传入key,返回value,
         // 传入 'hash' 返回hash名，
         // 传入 'search' 返回kv字符串,
@@ -487,9 +488,9 @@
          * @param {string} expire cookie的过期时间
          */        
         set: function (name, value, expire) {　
-            var date = new Date(),
-                endTime = date.getTime() + expire;
-            document.cookie = name + "=" + escape(value) + expire;
+            //var date = new Date(),
+            //    endTime = date.getTime() + expire;
+            document.cookie = name + "=" + encodeURI(value) + expire;
         },
     	 /**
          * 按键与值设置
@@ -501,7 +502,8 @@
             date.setTime(date.getTime() - 10000);
             document.cookie = name + "=v; expires=" + date.toGMTString();
         }
-    }
+    };
+
     /**
      * Array 数组的扩展方法
      * @namespace Array
@@ -549,15 +551,32 @@
 			    }
 			    return foundIndex;
 			},
-    	/** @method Array#filter */
-		filter: Array.prototype.filter || function (arr, filterfn) {
-			var validValues = [];
-		    for (var index = 0; index < arr.length; i++) {
-		        if (filterfn(theArray[index])) {
-		            validValues.push(theArray[index]);
-		        }
-		    }
-		},
+    	/**
+         * 过滤元素或对象返回符合条件的数组
+         * @method Array#filter
+         * @param {function} fun 回调函数
+         * @return Array
+         */
+		filter: Array.prototype.filter || function(fun /*, thisArg */) {
+            if (this === void 0 || this === null)
+                throw new TypeError();
+
+            var t = Object(this);
+            var len = t.length >>> 0;   //无符号右移运算
+            if (typeof fun !== "function")
+                throw new TypeError();
+
+            var res = [];
+            var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+            for (var i = 0; i < len; i++) {
+                if (i in t) {
+                    var val = t[i];
+                    if (fun.call(thisArg, val, i, t))
+                        res.push(val);
+                }
+            }
+            return res;
+        },
         /**
          * 查找元素或对象下标  (indexOf升级版  查找任意类型,不包括NaN) 
          * @method Array#indexOfObj 
@@ -572,22 +591,14 @@
                 }
             }
             return hasIt;
-        }, /**
+        },
+        /**
          * 查找是否包含元素或对象  (查找任意类型,不包括NaN) 
          * @method Array#has 
          * @return {boolean} true/false 存在不存在
          */
         has: function(any){
             return this.indexOfObj(any) !== -1;
-        },
-        /**
-         * 查找元素或对象下标  (filter升级版  查找任意类型,不包括NaN) 
-         * @method Array#indexOfObj 
-         * @return {number} 下标
-         * @todo
-         */        
-        filterObj: function(any, filterfn){
-
         },
         //去掉数组中某元素或对象，(下标会变动);
         /**
@@ -703,9 +714,9 @@
         /**
          * 将时长转化为time格式
          * @method Date#countdownFormat
-         * @param {integer} second 以毫秒计的时长
+         * @param {Date} endTime 以毫秒计的时长
          * @return {string} 返回固定格式的字符串
-         * @example 
+         * @example
          * getFormatTime(3600*1000*23) => "3天 23:00:00"
          */
 		countdownFormat: function(endTime) {
@@ -716,7 +727,7 @@
 			var daystr = remainDays ? remainDays + '天 ' : '';
 			if (s < 1000) s = 0;
 			var h = 0,
-				m = 0,
+				m = 0;
 				s = Math.floor(s / 1000);
 			if (s >= 60) {
 				m = Math.floor(s / 60);
@@ -730,7 +741,7 @@
 				return (num < 10) ? (0 + '' + num) : num;
 			}
 			return daystr + tf(h) + ':' + tf(m) + ':' + tf(s);
-		},
+		}
         //性能不如上面
         // getFormatTime: function(millsecond) {
         // 	return new Date(millsecond-3600*8*1000).toTimeString().match(/^(\d{2}\:){2}\d{2}/)[0];
@@ -744,7 +755,7 @@
     Cora.event = {
 	    /**
          * 为单个元素绑定事件
-         * @method Cora.event.reg 
+         * @method Cora.event.reg
          * @param {element} target 待绑定的元素
          * @param {eventType} type 触发的事件类型
          * @param {function} callback 触发回调
@@ -756,7 +767,7 @@
 		},
 	    /**
          * 为单个元素解绑事件
-         * @method Cora.event.reg 
+         * @method Cora.event.reg
          * @param {element} target 待绑定的元素
          * @param {eventType} type 解绑触发的事件类型
          * @param {function} callback 触发回调
@@ -770,34 +781,99 @@
     }
 
 
-    //新增发布订阅模式(publisher-subscriber)
-    var Ps = (function(){
-        var Pub = function(){
-            //管理订阅者, 这里的订阅者是一些function,
-            this.subs = [];  
+    /**
+     * 简单的发布订阅模式(publisher-subscriber)
+     * @class Cora.PS
+     * @namespace
+     * @exampl
+     * Cora.PS.add('pubNO1', function(data){
+     *      console.log('创建发布者时订阅的订阅者，接受到的数据是:', data);
+     * });
+     * function subNo1(data, name){
+     *      console.log('subNo1订阅到'+name+'对象，将接受到消息，为：', data);
+     * }
+     * function subNo2(data, name){
+     *      console.log('subFn2订阅到'+name+'对象，将接受到消息，为：', data);
+     * }
+     * subNo1.sub('pubNO1');   //subNo1订阅到 pubNO1
+     * subNo2.sub('pubNO1');   //subNo2订阅到 pubNO1
+     * Cora.PS.add('pubNO2');  //新增发布者 pubNO2;
+     * Cora.PS.send('pubNO1', {data:123}) //pubNO1发布消息
+     * @todo 需要厘清发布订阅机制创建多PS对象还是一个PS对象维护多个子发布者机制更好？
+     * @done 解决为一个PS对象，管理所有发布订阅对象
+     */
+    Cora.PS = (function(){
+        /**
+         * @see Cora.PS
+         */
+        var PubSub = function(){
+            //管理发布者, 键为发布者name,值为订阅者数组,
+            this.pubs = {
+                /*puberName: [suber, suber2]*/
+            };
+        };
+        var ps = new PubSub();
+        PubSub.prototype.get = function(name){
+          return this.pubs[name];
+        };
+        PubSub.prototype.set = function(name, subArr){
+          return this.pubs[name] = subArr;
         };
 
-        Publisher.prototype.deliver = function(data){
+        /**
+         * 创建发布者，并且有订阅者时绑定传入的订阅者
+         * 如果发布者已存在，则为设置发布者
+         * @method Cora.PS#add
+         * @param {string} name 发布者名称或标识
+         * @param {function} sub1, sub2, ... 订阅者
+         * @return {object} Cora.PS 对象
+         */
+        PubSub.prototype.add = function(name /*, sub1, sub2...*/){
+            var subs = this.get(name) || [];
+            var addsubs = Cora.toArray(arguments);
+                addsubs.shift();
+            this.set(name, subs.concat(addsubs));
+            return this;
+        };
+        /**
+         * name的发布者发布动作
+         * @method Cora.PS#send
+         * @param {string} name 发布者名称或标识
+         * @param {object} data 发布的数据
+         * @return {object} Cora.PS 对象即发布者
+         */
+        PubSub.prototype.send = function(name, data){
+            var that = this;
             // 有deliver时订阅者即执行
-            this.subs.forEach(function(sub){
-                sub(data);
+            this.pubs[name].forEach(function(sub){
+                sub(data, name);
             });
             return this;
         };
-
-        Function.prototype.sub = function(pub){
-            var isExist = pub.subs.has(this);
+        /**
+         * @method Function#sub
+         * @param {string} name 订阅到 name 的发布者
+         * @return {function} 订阅者
+         */
+        Function.prototype.sub = function(name){
+            var isExist = ps.get(name).has(this);
             if(!isExist){
-                pub.subs.push(this);
+                ps.pubs[name].push(this);
             }
             return this;
-        };        
-
-        Function.prototype.unsub = function(pub){
-            pub.subs.remove(this);
+        };
+        /**
+         * @method Function#unsub
+         * @param {string} name 取消订阅到某pub(PS)对象
+         * @return {function} 取消订阅者
+         */
+        Function.prototype.unsub = function(name){
+            ps.pubs[name].remove(this);
             return this;
         };
-    });
+
+        return ps;
+    })();
 
     /**
      * @lends Cora.prototype
@@ -805,11 +881,11 @@
     fn = Cora.fn = Cora.prototype = {
 
         /**
-         * @method Cora~_init
-         * @private
+         * @method Cora~init
+         * @protected
          * @todo 传入html元素时返回其
          */
-        _init: function(selector) {
+        init: function(selector) {
             if (!selector)
                 return this;
             //Cora对象    
@@ -877,12 +953,12 @@
          * setter:  Cora(selector).attr('attrname', 'attrbal')
          */
         attr: function(attrname, attrval) {
-            var idom, isset = (void 0 !== attrval);
+            var isset = (void 0 !== attrval);
             if (!isset) {
                 return this[0][0].getAttribute(attrname);
             }
 
-            this.each(function(item, i) {
+            this.each(function(item) {
                 item.setAttribute(attrname, attrval);
             });
         },
@@ -890,19 +966,18 @@
          * 判断元素是否具有某个class
          * @method Cora#find
          * @param {string} selector 选择器字符
-         * @return {element} 返回Cora对象
+         * @return {object} 返回Cora对象
          */
         find: function(selector) {
             var fdom, domarr = [];
-            this.each(function(item, i) {
+            this.each(function(item) {
                 fdom = item.querySelectorAll(selector);
                 if (fdom.length) {
                     domarr = domarr.concat(Cora.toArray(fdom));
                 }
             });
-            var selector = this.selector ? this.selector + ' ' + selector : selector;
-            var newfdom = Cora(domarr);
-            return newfdom;
+            //var selector = this.selector ? this.selector + ' ' + selector : selector;
+            return Cora(domarr);
         },
         /** 
          * 判断元素是否具有某个class
@@ -926,7 +1001,7 @@
          * @param {string} className class的名称
          */
         addClass: function(className) {
-            this.each(function(item, i) {
+            this.each(function(item) {
                 item.className += ' ' + className;
                 item.className = item.className.trim();
             });
@@ -956,7 +1031,6 @@
 
         css: function(key, value) {
             var args = arguments,
-                i = 0,
                 setter;
 
             // Get attribute
@@ -998,27 +1072,27 @@
             // }
             // console.log(styleDom, 'styleDom');
         },
-        /** 
+        /**
          * 在元素某处添加元素
          * @method Cora#insert
-         * @param {element} elem被添加的元素
-         * @param {String} position(1.before 2.front 3.end 4.after) 被添加的元素的位置
-         * @example 
-         * 1<a>2<b></b>3</a>4 
+         * @param {String} position (1.before 2.front 3.end 4.after) 被添加的元素的位置
+         * @param {element} elem 被添加的元素
+         * @example
+         * 1<a>2<b></b>3</a>4
          * position(1.before 2.front 3.end 4.after);
          */
         insert: function(position, elem) {
             var posi = position;
             posi = (posi === 'front') ? 'afterbegin' : posi;
             posi = (posi === 'end') ? 'beforeend' : posi;
-            this[0].forEach(function(item, i) {
+            this[0].forEach(function(item) {
                 item.insertAdjacentHTML(posi, elem);
             });
         },
         /** 
          * 在元素上设置绑定数据或获取数据
          * @method Cora#data
-         * @param {object} elem被添加的数据对象
+         * @param {object} set elem被添加的数据对象
          */
         data: function (set) {
         	var data = Cora.data;
@@ -1035,7 +1109,7 @@
 	    /**
          * 为cora元素绑定事件
          * @method Cora#on
-         * @param {eventType} type 触发的事件类型
+         * @param {eventType} eventType 触发的事件类型
          * @param {string} selector 待绑定的元素的选择器
          * @param {function} callback 触发回调
          * @todo 1: dom.contains	2: fn.bind(sth)
@@ -1072,7 +1146,7 @@
         /**
          * 为cora元素绑定事件
          * @method Cora#on
-         * @param {eventType} type 触发的事件类型
+         * @param {eventType} eventType 触发的事件类型
          * @param {string} selector 待绑定的元素的选择器
          * @param {function} callback 触发回调
          * @todo 1: dom.contains	2: fn.bind(sth)
@@ -1088,7 +1162,7 @@
 
     };
 
-    Cora.prototype._init.prototype = Cora.prototype;
+    Cora.prototype.init.prototype = Cora.prototype;
     //----------模板引擎
 
     //----------模块化组件注册(UI组件)
@@ -1096,14 +1170,14 @@
         /**
          * 在Corajs上扫描全局注册组件或插件
          * @method Cora.widgetize
-         * @param {dom} widgetElem
+         * @param {dom} widget
          * @example
          * 组件使用方式 widget="pluginsName" data-options={ a:"a",b:"b"}
          */
         $.widgetize = function(widget) {
-            var $widget = $(widget);
+            var $widget = $(widget),
             widgetName = $widget.attr('widget'),
-            widgetArgs = JSON.parse($widget.attr('data-options'));
+            widgetArgs = JSON.parse($widget.attr('data-options')),
             opts = widgetArgs ? widgetArgs : {};
 
             $.log('执行插件: [' + widgetName + ']', {type: 'info'});
@@ -1141,7 +1215,7 @@
         	elem.innerHTML = '';
         }
 
-    })(Cora)
+    })(Cora);
 
 
     //----------AMD模块化支持
