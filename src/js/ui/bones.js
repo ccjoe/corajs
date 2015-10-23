@@ -1,5 +1,5 @@
 /**
- * @author Joe <icareu.joe@gmail.com>
+ * @author Joe
  * @email icareu.joe@gmail.com   
  * @date 2014-07-16 10:15:13   
  * @content Bones                 

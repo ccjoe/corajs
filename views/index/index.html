@@ -7,45 +7,52 @@
 </head>
 
 <body>
-    <div class="selector1">1</div>
-    <div class="selector1">1.1
+<div class="selector1">1</div>
+<div class="selector1">1.1
         <span>
 			span
 		</span>
-    </div>
-    <div class="selector2" id="s2"><span>
+</div>
+<div class="selector2" id="s2"><span>
 			span
 		</span><span>
 			span
 		</span></div>
-    <em></em>
-    <div class="selector2" widget="bones" data-options='{"test": "123"}'>3</div>
-    <!-- <div class="selector3" widget="timer" data-options='{"test": "123"}'></div> -->
-    <button id="stop">stop</button>
-    <button id="start">start</button>
-    <button id="reset">reset</button>
-    <script src="js/cora.js"></script>
-    <script src="js/widget/bones.js"></script>
-    <script src="js/widget/timer.js"></script>
-    <script>
+<em></em>
 
-    	var widget = Cora.data.get($('.selector3')[0][0]);
-    	document.getElementById('stop').onclick = function(){
-    		widget.stop();
-    	};  
-    	document.getElementById('start').onclick = function(){
-    		widget.start();
-    	};
-    	document.getElementById('reset').onclick = function(){
-    		widget.reset();
-    	};
+<div class="selector2" widget="bones" data-options='{"test": "123"}'>3</div>
+<!-- <div class="selector3" widget="timer" data-options='{"test": "123"}'></div> -->
+<button id="stop">stop</button>
+<button id="start">start</button>
+<button id="reset">reset</button>
+<div id="testA">
+    <a href="" class="test-a-1">12312</a>
+    <a href="" class="test-a-2">12311</a>
+    <a href="" class="test-a-3">123123</a>
+</div>
 
-     console.log(Cora.version, $('.selector1'), $('.selector1').length);
-     console.log(Cora.type('string'), Cora.type([]), Cora.type(null), Cora.type($('.selector1')[0]));
-     console.log( new Date().addYear(3));
-     console.log($('.selector1').hasClass(), 'abcdedf');
-     console.log($('div').find('span'));
-    </script>
+<script src="js/cora.js"></script>
+<script src="js/ui/bones.js"></script>
+<script src="js/ui/timer.js"></script>
+<script>
+
+    var widget = Cora.data.get($('.selector3')[0][0]);
+    document.getElementById('stop').onclick = function () {
+        widget.stop();
+    };
+    document.getElementById('start').onclick = function () {
+        widget.start();
+    };
+    document.getElementById('reset').onclick = function () {
+        widget.reset();
+    };
+
+    console.log(Cora.version, $('.selector1'), $('.selector1').length);
+    console.log(Cora.type('string'), Cora.type([]), Cora.type(null), Cora.type($('.selector1')[0]));
+    console.log(new Date().addYear(3));
+    console.log($('.selector1').hasClass(), 'abcdedf');
+    console.log($('div').find('span'));
+</script>
 </body>
 
 </html>

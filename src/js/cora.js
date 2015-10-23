@@ -9,10 +9,7 @@
         _Cora = window.Cora;
     //内部全局变量
     var _g = {
-            types: ['boolean', 'number', 'string', 'function', 'object', 'array', 'date', 'regexp', 'error', 'undefined', 'null', 'html'],
-            capitalize: function(str, lower_others) {
-                return str.charAt(0).toUpperCase() + (!lower_others ? str.slice(1) : str.slice(1).toLowerCase());
-            }
+            types: ['Boolean', 'Number', 'String', 'Function', 'Object', 'Array', 'Date', 'RegExp', 'Error', 'Undefined', 'Null', 'HTML']
         },
         fn;
 
@@ -65,22 +62,22 @@
      * @param {type} obj 待检测的变量
      * @return {string} 返回变量的类型
      * @example
-     * 返回的类型有：'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'error', 'undefined', HTMLCollection, HTML(TagName)Element
+     * 返回的类型有：'Boolean', 'Number', 'String', 'Function', 'Object', 'Array', 'Date', 'Regexp', 'Error', 'Undefined', 'Null', HTMLCollection, HTML(TagName)Element
      * Cora.type(NaN)  => number
      */
     Cora.type = function(obj) {
-        if (obj === null) return String(obj);
+        if (obj === null) return 'Null';
         var tobj = {},
             types = _g.types,
             type = Object.prototype.toString.call(obj);
 
         for (var i = 0; i < types.length; i++) {
-            tobj['[object ' + _g.capitalize(types[i]) + ']'] = types[i];
+            tobj['[object ' + types[i] + ']'] = types[i];
         }
 
         if (type in tobj) return tobj[type];
         if (type === '[object Object]') type = obj + '';
-        var arr = type.match(/^\[object (HTML\w+)\]$/);
+        var arr = type.match(/^\[object (HTML\w+)]$/);
         if (arr) return arr[1];
         return 'object';
     };
@@ -92,37 +89,37 @@
      * @example
      * 方法列表有：'isBoolean', 'isNumber', 'isString', 'isFunction', 'isArray', 'isDate', 'isRegexp', 'isError', 'isUndefined', isNull, isNaN, isHTML
      */
-
-	for (var gi = 0; gi < _g.types.length; gi++) {
-		(function(i) {
-			var item = _g.types[i];
-			Cora['is' + _g.capitalize(item)] = function(eth) {
-				return (Cora.type(eth) === item);
-			};
-			Cora.isHTML = function(eth) {
-				return (!!~Cora.type(eth).indexOf('HTML'))
-			};
-			Cora.isNaN = function(eth){
-				return Cora.isNumber(eth) && isNaN(eth);
-			}
-		})(gi);
-	}
+    for (var gi = 0; gi < _g.types.length; gi++) (function (i) {
+        var item = _g.types[i];
+        Cora['is' + item] = function (eth) {
+            return (Cora.type(eth) === item);
+        };
+    })(gi);
+    Cora.isHTML = function(eth) {
+        return (!!~Cora.type(eth).indexOf('HTML'))
+    };
+    //@warn NaN可以判断类型为 isNumber 与 isNaN;
+    Cora.isNaN = function(eth){
+        return Cora.isNumber(eth) && isNaN(eth);
+    };
 
 	//Array.prototype.slice.call => https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
 	//Object.keys  => Polyfill From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 	(function(){var a=Array.prototype.slice;try{a.call(document.documentElement)}catch(b){Array.prototype.slice=function(h,d){d=(typeof d!=="undefined")?d:this.length;if(Object.prototype.toString.call(this)==="[object Array]"){return a.call(this,h,d)}var f,j=[],e,c=this.length;var k=h||0;k=(k>=0)?k:Math.max(0,c+k);var g=(typeof d=="number")?Math.min(d,c):c;if(d<0){g=c+d}e=g-k;if(e>0){j=new Array(e);if(this.charAt){for(f=0;f<e;f++){j[f]=this.charAt(k+f)}}else{for(f=0;f<e;f++){j[f]=this[k+f]}}}return j}}if(!Object.keys){Object.keys=function(){var c=Object.prototype.hasOwnProperty,f=!({toString:null}).propertyIsEnumerable("toString"),e=["toString","toLocaleString","valueOf","hasOwnProperty","isPrototypeOf","propertyIsEnumerable","constructor"],d=e.length;return function(j){if(typeof j!=="object"&&(typeof j!=="function"||j===null)){throw new TypeError("Object.keys called on non-object")}var h=[],k,g;for(k in j){if(c.call(j,k)){h.push(k)}}if(f){for(g=0;g<d;g++){if(c.call(j,e[g])){h.push(e[g])}}}return h}}}})();
    
     /**
-     * 将类数组对象转化为数组
+     * 将类数组对象或单个元素转化为数组
      * @method Cora.toArray
-     * @param {array} arrayLike 类数组对象
-     * @return {array} 返回真正的数组对象
-     * @todo ie<9需要支持 
+     * @param {array} arrlike 类数组对象
+     * @todo ie<9需要支持
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Browser_compatibility
      */
 
-    Cora.toArray = function(arrayLike) {
-        return [].slice.call(arrayLike);
+    Cora.toArray = function(arrlike) {
+        if(!arrlike.length && Cora.isHTML(arrlike)){
+            return [arrlike];
+        }
+        return [].slice.call(arrlike);
     };
     /**
      * Copy混合对象
@@ -132,6 +129,7 @@
      * @return {object} 返回合并后的第一个对象
      */
     Cora.merge = function(a, b) {
+        var bival;
         for (var i in b) {
             if(b.hasOwnProperty(i)){
                 bival = b[i];
@@ -149,13 +147,13 @@
      * 判断对象与数组是否相等，内部采取深度递归全等对比
      * @desc 这里认为空对象与空对象，空数组与空数组相等，相同内容的对象与数组相等, NaN与NaN不相等
      * @method Cora.objectEqual
-     * @param {object} a 待对比的对象
-     * @param {object} b 待对比的对象
+     * @param  a 待对比的对象
+     * @param  b 待对比的对象
      * @return {boolean} 返回是否相等
      */
     Cora.objectEqual = function (a, b) {
         //遍历a与b的类型是否相同
-        if(Cora.type(a) !==Cora.type(b)){
+        if(Cora.type(a) !== Cora.type(b)){
         	return false;
         }
     	//遍历a与b的长度是否相等
@@ -179,12 +177,19 @@
         }
         return !(Cora.isNaN(a) || Cora.isNaN(b));
     };
-
+    /**
+     * 判断任意对象是否相等
+     * @desc 这里认为空对象与空对象，空数组与空数组相等，相同内容的对象与数组相等, NaN与NaN不相等
+     * @method Cora.equal
+     * @param  a 待对比的对象
+     * @param  b 待对比的对象
+     * @return {boolean} 返回是否相等
+     */
     Cora.equal = function(a, b){
     	var type = Cora.type(a);
     	switch (type) {   		
-            case 'object':
-            case 'array':
+            case 'Object':
+            case 'Array':
     			return Cora.objectEqual(a, b);
     		    break;
     		default:
@@ -345,7 +350,6 @@
             }
             console.profileEnd(name);
         };
-
         return log;
     })();
     /**
@@ -476,7 +480,7 @@
             for (var i = 0; i < c.length; i++) {
                 var citem = c[i].split("=");
                 if (key === citem[0].replace(/^\s*|\s*$/, "")) {
-                    return unescape(citem[1]);
+                    return decodeURI(citem[1]);
                 }
             }
         },
@@ -498,9 +502,9 @@
          * @param {string} name cookie的名称
          */
         del: function (name) {
-            var date = new Date();
-            date.setTime(date.getTime() - 10000);
-            document.cookie = name + "=v; expires=" + date.toGMTString();
+            var d = new Date();
+             d.setTime(d.getTime() - 10000);
+            document.cookie = name + "=v; expires=" + d; //.toGMTString()
         }
     };
 
@@ -604,8 +608,7 @@
         /**
          * 查找元素或对象下标  (filter升级版  查找任意类型,不包括NaN) 
          * @method Array#remove 
-         * @return {array} 返回原数组
-         */  
+         */
         remove: function(any){
             return this.splice(this.indexOfObj(any),1);
         }
@@ -638,7 +641,7 @@
          * @method String#rtrim
          * @return {string} 返回处理后的字符串
          */
-        rtrim: String.prototype.trimRigth || function() {
+        rtrim: String.prototype.trimRight || function() {
             return this.replace(/\s+$/g, '');
         },
         /**
@@ -650,13 +653,32 @@
             return this.replace(/\s+/g, ' ')
         },
         /**
+         * 字符串补位
+         * @method String#lpad
+         * @return {string} 返回处理后的字符串
+         */
+        pad: function(width, padstr, lr){
+            var ellilen = width-this.length;
+            if(ellilen<1){
+                return this;
+            }
+
+            lr = lr || 'left';padstr = (padstr===void 0)?' ':String(padstr);
+            var padstrlen = padstr.length;
+
+            for(var endstr='',i=0; i<ellilen/padstrlen; i++){
+                endstr+=padstr;
+            }
+            return (lr==='left'?endstr:'') + this + (lr==='right'?endstr:'');
+        },
+        /**
          * 将一个单词的首字母大写
          * @method String#capit 即capitalize
          * @param {String} lower_others 将其余字符小写
          * @return {string} 返回处理后的字符串
          */
-        capit: function(lower_others) {
-            return _g.capitalize(this, lower_others);
+        capitalize: function(lower_others) {
+            return this.charAt(0).toUpperCase() + (!lower_others ? this.slice(1) : this.slice(1).toLowerCase());
         },
         /**
          * 将下划线或者中划线字符 转换转换成 camelized
@@ -688,7 +710,9 @@
             return this.trim().replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase();
         }
     });
-
+    Cora.extend(Function.prototype, {
+        bind: Function.prototype.bind || function(a){if(typeof this!=="function"){throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable")}var e=Array.prototype.slice.call(arguments,1),c=this,d=function(){},b=function(){return c.apply(this instanceof d&&a?this:a||window,e.concat(Array.prototype.slice.call(arguments)))};d.prototype=this.prototype;b.prototype=new d();return b}
+    });
     /**
      * Date日期的扩展方法
      * @namespace Date
@@ -719,68 +743,33 @@
          * @example
          * getFormatTime(3600*1000*23) => "3天 23:00:00"
          */
-		countdownFormat: function(endTime) {
+		countdownFormat: function(endTime, opts) {
 			var remainTime = new Date(endTime) - new Date(+this),
 				remainDays = Math.floor(remainTime / (3600000 * 24)),
-				s = remainTime % (3600000 * 24);
+                daystr = remainDays ? remainDays + '天 ' : '',
+				ms = remainTime % (3600000 * 24);   //毫秒数
 
-			var daystr = remainDays ? remainDays + '天 ' : '';
-			if (s < 1000) s = 0;
-			var h = 0,
-				m = 0;
-				s = Math.floor(s / 1000);
-			if (s >= 60) {
-				m = Math.floor(s / 60);
-				s = s % 60;
-				if (m >= 60) {
-					h = Math.floor(m / 60);
-					m = m % 60;
-				}
-			}
-			function tf(num) {
-				return (num < 10) ? (0 + '' + num) : num;
-			}
-			return daystr + tf(h) + ':' + tf(m) + ':' + tf(s);
+            var h=0, m=0, s=0;     //时分秒
+            if(ms >= 1000){
+                s = Math.floor(ms / 1000);
+                ms = ms % 1000;
+                if (s >= 60) {
+                    m = Math.floor(s / 60);
+                    s = s % 60;
+                    if (m >= 60) {
+                        h = Math.floor(m / 60);
+                        m = m % 60;
+                    }
+                }
+            }
+            opts = opts || {};
+			return (opts.showDay?daystr:'') +
+                    String(h).pad(2,0) + ':' +
+                    String(m).pad(2,0) + ':' +
+                    String(s).pad(2,0) +
+                    (opts.showMillSecond?' '+String(ms).pad(4,0):'');
 		}
-        //性能不如上面
-        // getFormatTime: function(millsecond) {
-        // 	return new Date(millsecond-3600*8*1000).toTimeString().match(/^(\d{2}\:){2}\d{2}/)[0];
-        // }
     });
-    /**
-     * 事件
-     * @namespace Cora.event
-     * @todo
-     */
-    Cora.event = {
-	    /**
-         * 为单个元素绑定事件
-         * @method Cora.event.reg
-         * @param {element} target 待绑定的元素
-         * @param {eventType} type 触发的事件类型
-         * @param {function} callback 触发回调
-         */
-    	reg: function (target, type, callback) {
-		    var listenerMethod = target.addEventListener || target.attachEvent,
-		        eventName = target.addEventListener ? type : 'on' + type;
-		    listenerMethod(eventName, callback, false);
-		},
-	    /**
-         * 为单个元素解绑事件
-         * @method Cora.event.reg
-         * @param {element} target 待绑定的元素
-         * @param {eventType} type 解绑触发的事件类型
-         * @param {function} callback 触发回调
-         */
-		unreg: function (target, type, callback) {
-		    var removeMethod = target.removeEventListener || target.detachEvent,
-		        eventName = target.removeEventListener ? type : 'on' + type;
-                console.log('removeMethod'+ eventName);
-		    removeMethod(eventName, callback);
-		}
-    }
-
-
     /**
      * 简单的发布订阅模式(publisher-subscriber)
      * @class Cora.PS
@@ -826,7 +815,7 @@
          * 如果发布者已存在，则为设置发布者
          * @method Cora.PS#addPub
          * @param {string} name 发布者名称或标识
-         * @param {function} sub1, sub2, ... 订阅者
+         * @param {function} [sub1, sub2, ...] 订阅者
          * @return {object} Cora.PS 对象
          */
         PubSub.prototype.add = function(name /*, sub1, sub2...*/){
@@ -847,7 +836,6 @@
          * @return {object} Cora.PS 对象即发布者
          */
         PubSub.prototype.send = function(name, data){
-            var that = this;
             // 有deliver时订阅者即执行
             this.pubs[name].forEach(function(sub){
                 sub(data, name);
@@ -878,7 +866,60 @@
 
         return ps;
     })();
+    /**
+     * 事件
+     * @namespace Cora.event
+     * @todo 确定是否所有的事件都会注册在window上
+     */
+    Cora.event =(function(){
 
+        var stopBubble = function (event) {
+            if (event.stopPropgation) {
+                event.stopPropagation();
+            }else {
+                event.cancelBubble = true;
+            }
+        };
+
+        var _callback = function(event, callback){
+            event.target =   event.target || event.srcElement;
+            callback(event);
+            stopBubble(event);
+        };
+
+        return {
+            /**
+             * 为单个元素绑定事件
+             * @method Cora.event.reg
+             * @param {element} target 待绑定的元素
+             * @param {eventType} type 触发的事件类型
+             * @param {function} callback 触发回调
+             */
+            reg: function (target, type, callback) {
+                var eventName = target.addEventListener ? type : 'on' + type;
+                if(target.addEventListener){
+                    target.addEventListener(eventName, function(event){_callback(event, callback);}, false);
+                }else{
+                    target.attachEvent(eventName, function(event){_callback(event, callback);});
+                }
+            },
+            /**
+             * 为单个元素解绑事件
+             * @method Cora.event.reg
+             * @param {element} target 待绑定的元素
+             * @param {eventType} type 解绑触发的事件类型
+             * @param {function} callback 触发回调
+             */
+            unreg: function (target, type, callback) {
+                var eventName = target.removeEventListener ? type : 'on' + type;
+                if(target.removeEventListener){
+                    target.removeEventListener(eventName, function(event){_callback(event, callback)}, false);
+                }else{
+                    target.detachEvent(eventName, function(event){_callback(event, callback)});
+                }
+            }
+        }
+    })();
     /**
      * @lends Cora.prototype
      */
@@ -898,13 +939,13 @@
             }
             var type = Cora.type(selector);
             //是function时
-            if (type === 'function') return Cora.ready(selector);
+            if (type === 'Function') return Cora.ready(selector);
             //是html元素时
             if (type.indexOf('HTML') !== -1) {
                 return this._makeCora(selector.length ? selector : [selector]);
             }
             //dom array
-            if (type === 'array') {
+            if (type === 'Array') {
                 return this._makeCora(selector);
             }
 
@@ -1120,32 +1161,34 @@
          */
         on: function(eventType, selector, callback){
         	var _t = this;
+            var _cb = function(event){
+                console.log('run _cb');
+                var retCb = callback(event);
+                if(retCb === false){     //仅申明返回false时阻止默认行为
+                    event.preventDefault();
+                }
+            }
+
         	//没有selector时为每个元素绑定事件
         	if(Cora.isFunction(selector)){
         		callback = selector;
         		_t.each(function (item) {
-        			Cora.event.reg(item, eventType, callback);
+                    console.log(item, 'item');
+        			Cora.event.reg(item, eventType, _cb);
         		});
         		return _t;
         	}
         	// 有selector时则为事件代理
         	Cora.event.reg(this[0][0], eventType, function(event) {
-        		var target = event.target || event.srcElement,
+        		var target = event.target,
         			targetContainer = _t.find(selector);
         			targetContainer.each(function(item){
         				if(item.contains(target)){
-        					callback(event, target);
+                            _cb(event);
         				}
         			});
         	});
             return _t;
-
-    // if (event.stopPropgation) {
-    //     event.stopPropagation();
-    // }
-    // else {
-    //     event.cancelBubble = true;
-    // }
         },  
         /**
          * 为cora元素绑定事件
@@ -1167,7 +1210,19 @@
     };
 
     Cora.prototype.init.prototype = Cora.prototype;
-    //----------模板引擎
+    /*
+     *@see https://github.com/olado/doT
+     *Laura Doktorova https://github.com/olado/doT Licensed under the MIT license
+     */
+    (function(){function p(b,a,d){return("string"===typeof a?a:a.toString()).replace(b.define||h,function(a,c,e,g){0===c.indexOf("def.")&&(c=c.substring(4));c in d||(":"===e?(b.defineParams&&g.replace(b.defineParams,function(a,b,l){d[c]={arg:b,text:l}}),c in d||(d[c]=g)):(new Function("def","def['"+c+"']="+g))(d));return""}).replace(b.use||h,function(a,c){b.useParams&&(c=c.replace(b.useParams,function(a,b,c,l){if(d[c]&&d[c].arg&&l)return a=(c+":"+l).replace(/'|\\/g,"_"),d.__exp=d.__exp||{},d.__exp[a]=
+        d[c].text.replace(new RegExp("(^|[^\\w$])"+d[c].arg+"([^\\w$])","g"),"$1"+l+"$2"),b+"def.__exp['"+a+"']"}));var e=(new Function("def","return "+c))(d);return e?p(b,e,d):e})}function k(b){return b.replace(/\\('|\\)/g,"$1").replace(/[\r\t\n]/g," ")}var f={version:"1.0.3",templateSettings:{evaluate:/\{\{([\s\S]+?(\}?)+)\}\}/g,interpolate:/\{\{=([\s\S]+?)\}\}/g,encode:/\{\{!([\s\S]+?)\}\}/g,use:/\{\{#([\s\S]+?)\}\}/g,useParams:/(^|[^\w$])def(?:\.|\[[\'\"])([\w$\.]+)(?:[\'\"]\])?\s*\:\s*([\w$\.]+|\"[^\"]+\"|\'[^\']+\'|\{[^\}]+\})/g,
+        define:/\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g,defineParams:/^\s*([\w$]+):([\s\S]+)/,conditional:/\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,iterate:/\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,varname:"it",strip:!0,append:!0,selfcontained:!1,doNotSkipEncoded:!1},template:void 0,compile:void 0},m;f.encodeHTMLSource=function(b){var a={"&":"&#38;","<":"&#60;",">":"&#62;",'"':"&#34;","'":"&#39;","/":"&#47;"},d=b?/[&<>"'\/]/g:/&(?!#?\w+;)|<|>|"|'|\//g;return function(b){return b?
+        b.toString().replace(d,function(b){return a[b]||b}):""}};m=function(){return this||(0,eval)("this")}();"undefined"!==typeof module&&module.exports?module.exports=f:"function"===typeof define&&define.amd?define(function(){return f}):m.doT=f;var r={start:"'+(",end:")+'",startencode:"'+encodeHTML("},s={start:"';out+=(",end:");out+='",startencode:"';out+=encodeHTML("},h=/$^/;f.template=function(b,a,d){a=a||f.templateSettings;var n=a.append?r:s,c,e=0,g;b=a.use||a.define?p(a,b,d||{}):b;b=("var out='"+(a.strip?
+        b.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g," ").replace(/\r|\n|\t|\/\*[\s\S]*?\*\//g,""):b).replace(/'|\\/g,"\\$&").replace(a.interpolate||h,function(b,a){return n.start+k(a)+n.end}).replace(a.encode||h,function(b,a){c=!0;return n.startencode+k(a)+n.end}).replace(a.conditional||h,function(b,a,c){return a?c?"';}else if("+k(c)+"){out+='":"';}else{out+='":c?"';if("+k(c)+"){out+='":"';}out+='"}).replace(a.iterate||h,function(b,a,c,d){if(!a)return"';} } out+='";e+=1;g=d||"i"+e;a=k(a);return"';var arr"+
+            e+"="+a+";if(arr"+e+"){var "+c+","+g+"=-1,l"+e+"=arr"+e+".length-1;while("+g+"<l"+e+"){"+c+"=arr"+e+"["+g+"+=1];out+='"}).replace(a.evaluate||h,function(a,b){return"';"+k(b)+"out+='"})+"';return out;").replace(/\n/g,"\\n").replace(/\t/g,"\\t").replace(/\r/g,"\\r").replace(/(\s|;|\}|^|\{)out\+='';/g,"$1").replace(/\+''/g,"");c&&(a.selfcontained||!m||m._encodeHTML||(m._encodeHTML=f.encodeHTMLSource(a.doNotSkipEncoded)),b="var encodeHTML = typeof _encodeHTML !== 'undefined' ? _encodeHTML : ("+f.encodeHTMLSource.toString()+
+        "("+(a.doNotSkipEncoded||"")+"));"+b);try{return new Function(a.varname,b)}catch(q){throw"undefined"!==typeof console&&console.log("Could not create a template function: "+b),q;}};f.compile=function(b,a){return f.template(b,null,a)}})();
+
+    Cora.extend(Cora, doT);
 
     //----------模块化组件注册(UI组件)
     (function($) {
@@ -1236,6 +1291,5 @@
 
 })();
 
-//string slice splice indexOf substr substring 
-//arrar slice splice indexOf
-//参考 jbonejs
+
+//参考 jbonejs doT
