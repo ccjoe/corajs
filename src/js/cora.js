@@ -116,6 +116,9 @@
      */
 
     Cora.toArray = function(arrlike) {
+        if(Cora.isArray(arrlike)){
+            return arrlike;
+        }
         if(!arrlike.length && Cora.isHTML(arrlike)){
             return [arrlike];
         }
@@ -1162,8 +1165,7 @@
         on: function(eventType, selector, callback){
         	var _t = this;
             var _cb = function(event){
-                console.log('run _cb');
-                var retCb = callback(event);
+                var retCb = callback(event, event.target);
                 if(retCb === false){     //仅申明返回false时阻止默认行为
                     event.preventDefault();
                 }
@@ -1173,7 +1175,6 @@
         	if(Cora.isFunction(selector)){
         		callback = selector;
         		_t.each(function (item) {
-                    console.log(item, 'item');
         			Cora.event.reg(item, eventType, _cb);
         		});
         		return _t;

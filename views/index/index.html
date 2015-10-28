@@ -30,6 +30,11 @@
     <a href="" class="test-a-2">12311</a>
     <a href="" class="test-a-3">123123</a>
 </div>
+<div id="testB">
+    <a href="" class="test-a-1">12312</a>
+    <a href="" class="test-a-2">12311</a>
+    <a href="" class="test-a-3">123123</a>
+</div>
 
 <script src="js/cora.js"></script>
 <script src="js/ui/bones.js"></script>
@@ -52,6 +57,18 @@
     console.log(new Date().addYear(3));
     console.log($('.selector1').hasClass(), 'abcdedf');
     console.log($('div').find('span'));
+
+    $('#testA').on('click', 'a', function(e, item){
+        console.log(e, item);
+        return false;
+    });
+
+    $('#testB').find('a').on('click', function(e, item){
+        console.log(e, item);
+        return false;
+    });
+
+
 </script>
 </body>
 

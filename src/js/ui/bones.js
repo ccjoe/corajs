@@ -30,7 +30,7 @@
          * @member {Object} Bones~opts
          */
         
-        this.opts = $.extend({}, defaultOptions, opts); //再混合一次的目的是防止使用window.Bones调用
+        this.opts = $.extend({}, $.fn.bones.defaults, opts); //再混合一次的目的是防止使用window.Bones调用
         /**
          * 插件根元素  
          * @member {element} Bones~$dom
@@ -91,7 +91,7 @@
                 //判断是否实例化过
                 var ui = $.data.get(item, "bones");
                 if (!ui) {
-                    var opts = $.extend({}, defaultOptions, typeof options === "object" ? options : {});
+                    var opts = $.extend({}, $.fn.bones.defaults, typeof options === "object" ? options : {});
                     //ui 即为实例化过的组件
                     ui = new Bones(opts, item);
                     //实例化后在上面添加标识;
@@ -109,12 +109,12 @@
     /**
      * 插件的默认参数 里面的this指向swc构造函数
      * @namespace defaultOptions
-     * @property {string} test -切换列表 
-     * @property {function} hideBones -切换内容        
+     * @property {string} test -切换列表
+     * @property {function} hideBones -切换内容
      * @default
      * @augments defaultOptions
      */
-    var defaultOptions = {
+    $.fn.bones.defaults = {
         test: '1',
         /** @callback */
         hideBones: function() {} //隐藏后回调
@@ -135,4 +135,4 @@
      * @example 组件使用方式 new Bones(opts, item);
      */
     window.Bones = Bones;
-})(Cora)
+})(Cora);
