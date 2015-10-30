@@ -99,4 +99,76 @@ describe("String扩展方法测试", function(){
         expect(true).toBe(true);
         //expect(Cora.template('<% data %>', {data:123}) === '123').toBe(true);
     });
-})
+});
+
+describe("Array测试", function(){
+    $.log('array.prototype.somemethod，somemethod不存在时才会调用到,对于测试不便测到！', {type: 'info'});
+});
+
+describe("Cora.PS 发布订阅对象测试", function(){
+    Cora.PS.add('pubNO1', function(data){
+        console.log('创建发布者时订阅的订阅者，接受到的数据是:', data);
+    });
+    function subNo1(data, name){
+        console.log('subNo1订阅到'+name+'对象，将接受到消息，为：', data);
+    }
+    function subNo2(data, name){
+        console.log('subFn2订阅到'+name+'对象，将接受到消息，为：', data);
+    }
+    Cora.PS.add('pubNO2');  //新增发布者 pubNO2;
+    subNo1.sub('pubNO1');   //subNo1订阅到 pubNO1
+    subNo2.sub('pubNO1').sub('pubNO2');   //subNo2订阅到 pubNO1
+    subNo2.unsub('pubNO1');   //subNo1订阅到 pubNO1
+
+    it("发布消息", function(){
+        Cora.PS.send('pubNO1', {data:123}); //pubNO1发布消息
+        Cora.PS.send('pubNO2', {data:'pubNo2 From!'}); //pubNO1发布消息
+    });
+
+    it("添加重复发布对象会覆盖之前的发布订阅绑定", function(){
+        Cora.PS.add('pubNO2');
+        Cora.PS.send('pubNO2', {data:'此消息应该不会显示出来'}); //pubNO1发布消息
+        console.log('不会触发之前的绑定，此处应无订阅消息');
+    })
+});
+
+describe("Cora.url 测试获取url对象", function(){
+    var urlarr = ['http://www.test.com/a/b/c?test=1&kk=2#hash/p1/p2/p3?htest=1&hh=2',
+        'http://www.test.com/a/b/c/?test=1&kk=2#hash/p1/p2/p3',
+        'http://www.test.com/a/b/c?test=1&kk=2#hash?htest=1&hh=2',
+        'http://www.test.com/a/b/c/?test=1&kk=2#hash',
+        'http://www.test.com/a/b/c',
+        'http://www.test.com/#hash',
+        'https://test.cn/#hash',
+        'http://www.test.com/',
+        'http://test.com/',
+        'http://test.com/',
+        '/a/b/c#hash/p1/p2/p3/?test=1&kk=2',
+        '#hash/p1/p2/p3/?test=1&kk=2',
+        '#test?test=1&kk=2',
+        '?test=1&kk=2',
+        '#hash',
+        ''];
+
+    it("测试打印内容", function(){
+        for(var i=0 ; i<urlarr.length; i++){
+            var item = urlarr[i];
+            var urls = Cora.url.get(item);
+            console.log(urls);
+        }
+        console.log('----------------------------');
+
+        for(var j=0 ; j<urlarr.length; j++){
+            var item = urlarr[j];
+            console.log(Cora.url.get(item, true));
+        }
+        console.log('----------------------------');
+
+        for(var k=0 ; k<urlarr.length; k++){
+            var item = urlarr[k];
+            console.log(Cora.url.getParams(item));
+        }
+        console.log('----------------------------');
+
+    });
+});

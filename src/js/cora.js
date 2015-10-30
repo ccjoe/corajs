@@ -12,7 +12,7 @@
             types: ['Boolean', 'Number', 'String', 'Function', 'Object', 'Array', 'Date', 'RegExp', 'Error', 'Undefined', 'Null', 'HTML']
         },
         fn;
-
+    /************************************ Main ***************************************/
     /**
      * 全局对象
      * @namespace
@@ -31,11 +31,13 @@
     function Cora(selector) {
         return new fn.init(selector);
     }
+    /************************************ Tools ***************************************/
     /**
      * @version Cora.version
      * @method Cora.version
      */
     Cora.version = '1.0.0';
+
     /**
      * @method Cora.config
      * @property debug 是否开启debug
@@ -46,6 +48,7 @@
     };
 
     Cora.noop = function noop() {};
+
     /**
      * 命名冲突时使用此方法
      * @method Cora.noConflict
@@ -56,6 +59,7 @@
         window.Cora = _Cora;
         return Cora;
     };
+    /**------------ type && is{Type} ------------------*/
     /**
      * 判断变量的类型, 判断dom类型时,用querySelectorAll集合为object
      * @method Cora.type
@@ -106,7 +110,7 @@
 	//Array.prototype.slice.call => https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
 	//Object.keys  => Polyfill From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 	(function(){var a=Array.prototype.slice;try{a.call(document.documentElement)}catch(b){Array.prototype.slice=function(h,d){d=(typeof d!=="undefined")?d:this.length;if(Object.prototype.toString.call(this)==="[object Array]"){return a.call(this,h,d)}var f,j=[],e,c=this.length;var k=h||0;k=(k>=0)?k:Math.max(0,c+k);var g=(typeof d=="number")?Math.min(d,c):c;if(d<0){g=c+d}e=g-k;if(e>0){j=new Array(e);if(this.charAt){for(f=0;f<e;f++){j[f]=this.charAt(k+f)}}else{for(f=0;f<e;f++){j[f]=this[k+f]}}}return j}}if(!Object.keys){Object.keys=function(){var c=Object.prototype.hasOwnProperty,f=!({toString:null}).propertyIsEnumerable("toString"),e=["toString","toLocaleString","valueOf","hasOwnProperty","isPrototypeOf","propertyIsEnumerable","constructor"],d=e.length;return function(j){if(typeof j!=="object"&&(typeof j!=="function"||j===null)){throw new TypeError("Object.keys called on non-object")}var h=[],k,g;for(k in j){if(c.call(j,k)){h.push(k)}}if(f){for(g=0;g<d;g++){if(c.call(j,e[g])){h.push(e[g])}}}return h}}}})();
-   
+    /**--------------- type && is{Type} ------------------*/
     /**
      * 将类数组对象或单个元素转化为数组
      * @method Cora.toArray
@@ -114,7 +118,6 @@
      * @todo ie<9需要支持
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Browser_compatibility
      */
-
     Cora.toArray = function(arrlike) {
         if(Cora.isArray(arrlike)){
             return arrlike;
@@ -124,6 +127,8 @@
         }
         return [].slice.call(arrlike);
     };
+
+    /**--------------- Extend ------------------*/
     /**
      * Copy混合对象
      * @method Cora.merge
@@ -146,6 +151,28 @@
         }
         return a;
     };
+    /**
+     * 混合多个对象
+     * @method Cora.extend
+     * @param {object} 待合并的对象
+     * @return {object} 返回变量的类型
+     * @todo 是否有性能问题有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
+     * 对比 https://github.com/sindresorhus/object-assign相关优化
+     */
+    Cora.extend = Object.assign || function() {
+            var args = Cora.toArray(arguments);
+            if (!args.length) {
+                return {};
+            } else if (args.length === 1) {
+                return args[0];
+            } else {
+                for (var i = 0; i < args.length; i++) {
+                    args[0] = Cora.merge(args[0], args[i]);
+                }
+                return args[0];
+            }
+        };
+    /**--------------- Equal ------------------*/
     /**
      * 判断对象与数组是否相等，内部采取深度递归全等对比
      * @desc 这里认为空对象与空对象，空数组与空数组相等，相同内容的对象与数组相等, NaN与NaN不相等
@@ -201,28 +228,202 @@
     	}
     };
 
+    /**--------------- Browse ------------------*/
     /**
-     * 混合多个对象
-     * @method Cora.extend
-     * @param {object} 待合并的对象
-     * @return {object} 返回变量的类型
-     * @todo 是否有性能问题有待验证：问题在于传入多个对象时是采用按前二合并依次往后, 可优化或验证是否从后往前合并更高效
-     * 对比 https://github.com/sindresorhus/object-assign相关优化
+     * 探测浏览器类型
+     * @method Cora.browse
+     * @return {string} 返回浏览器类型字符串
      */
-    Cora.extend = Object.assign || function() {
-        var args = Cora.toArray(arguments);
-        if (!args.length) {
-            return {};
-        } else if (args.length === 1) {
-            return args[0];
-        } else {
-            for (var i = 0; i < args.length; i++) {
-                args[0] = Cora.merge(args[0], args[i]);
-            }
-            return args[0];
-        }
+    Cora.browse = function() {
+        //var blist = {
+        //
+        //};
+        //return blist;
     };
+    /**
+     * 判断domReady
+     * @method Cora.ready
+     * @param {function} func 待检测的变量
+     */
+    Cora.ready = function(func) {};
 
+    /**--------------- URL Parse ------------------*/
+    Cora.url = (function(){
+        var re = {
+            url: /((http|https):\/\/)?((\w+\.)+\w+)?((\/\w+)+)?\/?\??((\w+=\w+&?)+)?#?(.+)?/g,
+            kv : /(\w+)=(\w+)/g,
+            search: /[^\?]+\??((\w+=\w+&?)+)?/,     //[^\?]+ 除?外所有
+            path: /.+((\/\w+)+)?/
+        };
+
+        /**
+         * 处理键值对字符串为对象,获取url里所有键值对返回
+         * @method Cora.url.getParams
+         * @param {string} kvp key-value-pairs-string
+         * @return {object} 返回键值对对象
+         * @example  hashsearch=test; => {hashsearch: test}
+         */
+        var getKv = function (kvp){
+            if(!kvp) return {};
+            var okvp = {},  kvpi; //object key val pairs;
+            var kvpArr = kvp.match(re.kv);
+            if(!kvpArr || !kvpArr.length) return {};
+            kvpArr.forEach(function(i){
+                re.kv.lastIndex = 0;
+                kvpi = re.kv.exec(i);
+                okvp[kvpi[1]] = kvpi[2];
+            });
+            return okvp;
+        };
+        /**
+         * 处理hash里 search部分键值对对象
+         * @method Cora.url.getHashSearch
+         * @param {string} url  string
+         * @return {object} 返回hash里的search部分键值对对象
+         * @example  #hash/hashpath/123?hashsearch=test; => {hashsearch: test}
+         */
+        var getHashSearch = function (hash, isParse){
+            if(!hash) return isParse ? {} : '';
+            var hashSchStr = re.search.exec(hash)[1];
+            return isParse ? getKv(hashSchStr) : hashSchStr;
+        };
+
+        /**
+         * 处理hash里 path部分数组
+         * @method Cora.url.getHashPath
+         * @param {string} hash hash部分字符串
+         * @return {array} 返回hash里的path部分数组
+         * @example  #hash/hashpath/123/?hashsearch=test; => [hashpath,123]
+         */
+        var getHashPath = function (hash, isParse){
+            if(!hash) return isParse ? [] : '';
+            var hashPathStr = re.path.exec(hash)[0];
+            return isParse ? hashPathStr.split('/') : hashPathStr;
+        };
+
+        /**
+         * 处理url 相关部件解析与 生成
+         * @method Cora.url.getUrl
+         * @param {string} url 传入url
+         * @param {boolean} parse parse为true时返回的各部件为序列化对象，否则为string
+         * @return {object} 返回url各部件
+         * @example  http://domain.com/pathto/urlpath/123?search=1&param=11/#hash/hashpath/123?hashsearch=test;
+         * return value like {
+                protocal: {string},   协议
+                domain: {string},     域名
+                path: {string},       路径
+                search: {object},     参数
+                hash: {string},       Hash，#后所有
+                hashsearch: {object}  Hash里参数
+                hashPath: {array}     Hash里数组
+            };
+         */
+        var getUrl  = function (url, isParse){
+            re.url.lastIndex = 0;
+            var uri = re.url.exec(url);
+            var hashfull = uri[9]; path = uri[5] || ''; search = uri[7] || '';
+            return {
+                protocal: uri[2],
+                domain: uri[3],
+                path: isParse ? path.substring(1).split('/') : path,
+                search: isParse ? getKv(search) :search,
+                hash: hashfull,
+                hashPath: getHashPath(hashfull, isParse) ,
+                hashsearch: getHashSearch(hashfull, isParse)
+            };
+        };
+
+        //var getUrls = function (url, keyOrStr, returnObj) {
+        //    url = decodeURIComponent(url); //对url进行decodeURIComponen解码
+        //    var hashIndex = url.indexOf('#'), hasHash = hashIndex !== -1,
+        //        searchIndex = url.indexOf('?'),
+        //        hasSearch = !hasHash ?
+        //                    searchIndex !== -1 : //hash里有param的情况时也会有'?',不算search算hashsearch
+        //                    (searchIndex !== -1 && searchIndex<hashIndex);
+        //    var _fullHash = getFullHash(),
+        //        _search = getSearch();
+        //
+        //    var hashSearchIndex = _fullHash.indexOf('?'),
+        //        hasHashSearch = hashSearchIndex !== -1;
+        //
+        //    var _hash = getHash();
+        //
+        //    //认为hash后面所有的串都是hash
+        //    function getFullHash(){
+        //        return !hasHash ? '' : url.substring(hashIndex+1);
+        //    }
+        //
+        //    //仅#后面？前的串
+        //    function getHash(){
+        //        return !hasHashSearch ? _fullHash : _fullHash.substring(0, hashSearchIndex);
+        //    }
+        //
+        //    function getSearch(){
+        //        return !hasSearch ? '' : ( !hasHash ? url.substring(searchIndex+1) : url.substring(searchIndex+1, hashIndex));
+        //    }
+        //
+        //    function getPath(){
+        //        //url.replace(/\S*((\/\w)+)/, function(){
+        //        //
+        //        //});
+        //    }
+        //
+        //    function getHashSearch(){
+        //        return !hasHashSearch ? '' :  _fullHash.substring(hashSearchIndex+1);
+        //    }
+        //
+        //    function getParams(str){
+        //        var kv, paramsObj={},params = str.split('&');
+        //        for(var i=0; i<params.length; i++){
+        //            kv = params[i].split('=');
+        //            paramsObj[kv[0]] = kv[1];
+        //        }
+        //        return paramsObj;
+        //    }
+        //    //console.log(_hash, _fullHash, _search, getHashSearch(), '............................');
+        //    switch (keyOrStr) {
+        //        case 'hash':
+        //            return _hash; break;
+        //        case 'search':
+        //            return returnObj ? getParams(_search) :  _search; break;
+        //        case 'hashsearch':
+        //            return returnObj ? getParams(getHashSearch()) : getHashSearch(); break;
+        //        case 'host':
+        //            return host; break;
+        //        case 'domain':
+        //            return domain; break;
+        //        default:
+        //            return getParams(keyOrStr);
+        //    }
+        //};
+        var setUrl = function (url, keyValueOrObj, value) {
+            var kvpair;
+            if (typeof keyValueOrObj === 'string') {
+                kvpair = keyValueOrObj + '=' + value;
+                if (!~url.indexOf('?')) {
+                    return url + '?' + kvpair;
+                } else {
+                    return url + '&' + kvpair;
+                }
+            } else if (typeof keyValueOrObj === 'object') {
+                kvpair = $.param(keyValueOrObj);
+                if (!~url.indexOf('?')) {
+                    return url + '?' + kvpair;
+                } else {
+                    return url + '&' + kvpair;
+                }
+            }
+        };
+        return {
+            get: getUrl,
+            set: setUrl,
+            getParams: getKv,
+            getHashSearch: getHashSearch,
+            getHashPath: getHashPath
+        };
+    })();
+
+    /**--------------- Log Module ------------------*/
     Cora.log = (function($) {
         var methods = [
             'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
@@ -247,7 +448,7 @@
          * @prop opts.size  {string} options small large x-large... 输出信息的大小
          * @prop opts.shadow {boolean}  options true/false 输出信息是否带阴影
          * @prop opts.css  {css} options css key:value pairs输出信息的样式，也可以复写颜色与大小
-         * @example 
+         * @example
          * $.log("show in console");
          * $.log("show in console", {
          * 	  type: 'warn',
@@ -260,46 +461,46 @@
          * 仅支持一次输出一个对象
          */
         var log = function(output, opts) {
-          var format = '';
-              opts = opts || {};
-          var type = opts.type = opts.type || 'log';
-          var hasColor = (void 0 !== opts.color);
-          if (Cora.isString(output)) {
-              format = '%s';
-          }          
-          if (Cora.isObject(output)) {
-              format = '%O';
-          }          
+            var format = '';
+            opts = opts || {};
+            var type = opts.type = opts.type || 'log';
+            var hasColor = (void 0 !== opts.color);
+            if (Cora.isString(output)) {
+                format = '%s';
+            }
+            if (Cora.isObject(output)) {
+                format = '%O';
+            }
 
-          if (Cora.isNumber(output)) {
-              format = '%d';
-          }
-          if (Cora.isHTML(output)) {
-              format = '%o';
-          }
+            if (Cora.isNumber(output)) {
+                format = '%d';
+            }
+            if (Cora.isHTML(output)) {
+                format = '%o';
+            }
 
-          if (!hasColor) {
-              switch (type) {
-                  case 'info':
-                      opts.color = '#999';
-                      break;
-                  case 'warn':
-                      opts.color = 'orange';
-                      break;
-                  case 'error':
-                      opts.color = 'pink';
-              }
-          }
+            if (!hasColor) {
+                switch (type) {
+                    case 'info':
+                        opts.color = '#999';
+                        break;
+                    case 'warn':
+                        opts.color = 'orange';
+                        break;
+                    case 'error':
+                        opts.color = 'pink';
+                }
+            }
 
-          opts.size = opts.size || 'normal';
-          opts.css = opts.css || '';
-          if (opts.rainbow){
-          	opts.css += 'background-image:-webkit-gradient( linear, left top, right top, color-stop(0, #f22), color-stop(0.15, #f2f), color-stop(0.3, #22f), color-stop(0.45, #2ff), color-stop(0.6, #2f2),color-stop(0.75, #2f2), color-stop(0.9, #ff2), color-stop(1, #f22) );color:transparent;-webkit-background-clip: text;';
-          }
-          if (opts.shadow) {
-              opts.css += "text-shadow: 0 1px 0 #ccc,0 2px 0 #c9c9c9;";
-          }
-          console[type]('%c' + format + '%s', 'color:' + opts.color + '; font-size:' + opts.size + '; ' + opts.css, output,  Cora.config.debugLabel);
+            opts.size = opts.size || 'normal';
+            opts.css = opts.css || '';
+            if (opts.rainbow){
+                opts.css += 'background-image:-webkit-gradient( linear, left top, right top, color-stop(0, #f22), color-stop(0.15, #f2f), color-stop(0.3, #22f), color-stop(0.45, #2ff), color-stop(0.6, #2f2),color-stop(0.75, #2f2), color-stop(0.9, #ff2), color-stop(1, #f22) );color:transparent;-webkit-background-clip: text;';
+            }
+            if (opts.shadow) {
+                opts.css += "text-shadow: 0 1px 0 #ccc,0 2px 0 #c9c9c9;";
+            }
+            console[type]('%c' + format + '%s', 'color:' + opts.color + '; font-size:' + opts.size + '; ' + opts.css, output,  Cora.config.debugLabel);
 
         };
         /**
@@ -355,76 +556,8 @@
         };
         return log;
     })();
-    /**
-     * 探测浏览器类型
-     * @method Cora.browse
-     * @return {string} 返回浏览器类型字符串
-     */
-    Cora.browse = function() {
-        //var blist = {
-        //
-        //};
-        //return blist;
-    };
 
-    /**
-     * 判断domReady
-     * @method Cora.ready
-     * @param {function} func 待检测的变量
-     */
-    Cora.ready = function(func) {};
-    Cora.url = (function(){
-        //1=>URL,
-        //2=>传入key,返回value,
-        // 传入 'hash' 返回hash名，
-        // 传入 'search' 返回kv字符串,
-        // 传入 'domain' 返回.com|.net ~~~,
-        // 否则返回key:value obj;
-        // http://www.sth.com/th
-        // 传入location
-        // getUrl: function (url, keyOrObj) {
-        //     //对url进行decodeURIComponen解码
-        //     url = decodeURIComponent(url);
-        //     var hashsearch = !~url.indexOf('#') ? '' : url.substr(url.indexOf('#') + 2);
-            
-
-        //     var pos = hashsearch.indexOf('?');
-        //     if (!!~pos) {
-        //         var hash = hashsearch.substr(0, pos),
-        //             search = hashsearch.substr(pos + 1),
-        //             kvArr = search.split('&');
-        //     } else {
-        //         var hash = hashsearch,
-        //             search = '',
-        //             kvArr = [];
-        //     }
-
-        //     var kvObj = {};
-
-        //     for (var i = 0; i < kvArr.length; i++) {
-        //         var kvi = kvArr[i];
-        //         kvObj[kvi.substr(0, kvi.indexOf('='))] = kvi.substr(kvi.indexOf('=') + 1);
-        //     }
-
-        //     if (typeof keyOrObj === 'string') {
-        //         if (keyOrObj === 'hash') {
-        //             return hash;
-        //         }
-        //         if (keyOrObj === 'search') {
-        //             return search;
-        //         }
-        //         if (keyOrObj === 'domain') {
-        //             var durl = /http:\/\/([^\/]+)\//i,
-        //             domain = str.match(durl);
-        //             return domain[1].substr(domain[1].lastIndexOf('.') + 1);
-        //         }
-        //         return kvObj[keyOrObj];
-        //     }
-
-        //     return kvObj;
-        // },
-    });
-		
+    /************************************ Data ***************************************/
     /**
      * data实现节点绑定数据  works in all browsers
      * @namespace Cora.data
@@ -467,6 +600,8 @@
             }
         };
     }());
+
+    /************************************ Cookie ***************************************/
     /**
      * 实现cookie操作
      * @namespace Cora.cookie
@@ -511,6 +646,7 @@
         }
     };
 
+    /************************************ Array ***************************************/
     /**
      * Array 数组的扩展方法
      * @namespace Array
@@ -616,6 +752,8 @@
             return this.splice(this.indexOfObj(any),1);
         }
     });
+
+    /************************************ String ***************************************/
     /**
      * String日期的扩展方法
      * @namespace String
@@ -713,9 +851,13 @@
             return this.trim().replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase();
         }
     });
+
+    /************************************ Function ***************************************/
     Cora.extend(Function.prototype, {
         bind: Function.prototype.bind || function(a){if(typeof this!=="function"){throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable")}var e=Array.prototype.slice.call(arguments,1),c=this,d=function(){},b=function(){return c.apply(this instanceof d&&a?this:a||window,e.concat(Array.prototype.slice.call(arguments)))};d.prototype=this.prototype;b.prototype=new d();return b}
     });
+
+    /************************************ Date ***************************************/
     /**
      * Date日期的扩展方法
      * @namespace Date
@@ -742,6 +884,7 @@
          * 将时长转化为time格式
          * @method Date#countdownFormat
          * @param {Date} endTime 以毫秒计的时长
+         * @param {Object} opts 是否显示天与millsecond
          * @return {string} 返回固定格式的字符串
          * @example
          * getFormatTime(3600*1000*23) => "3天 23:00:00"
@@ -773,6 +916,8 @@
                     (opts.showMillSecond?' '+String(ms).pad(4,0):'');
 		}
     });
+
+    /******************************** publisher-subscriber ***********************************/
     /**
      * 简单的发布订阅模式(publisher-subscriber)
      * @class Cora.PS
@@ -792,7 +937,6 @@
      * subNo2.sub('pubNO1').sub('pubNO2');   //subNo2订阅到 pubNO1
      * Cora.PS.send('pubNO1', {data:123}) //pubNO1发布消息
      * Cora.PS.send('pubNO2', {data:'pubNo2 From!'}) //pubNO1发布消息
-     * @todo 需要厘清发布订阅机制创建多PS对象还是一个PS对象维护多个子发布者机制更好？
      * @done 解决为一个PS对象，管理所有发布订阅对象
      */
     Cora.PS = (function(){
@@ -816,9 +960,9 @@
         /**
          * 创建新增发布者，并且有订阅者时绑定传入的订阅者
          * 如果发布者已存在，则为设置发布者
-         * @method Cora.PS#addPub
+         * @method Cora.PS#add
          * @param {string} name 发布者名称或标识
-         * @param {function} [sub1, sub2, ...] 订阅者
+         * @param {function} arguments 订阅者
          * @return {object} Cora.PS 对象
          */
         PubSub.prototype.add = function(name /*, sub1, sub2...*/){
@@ -869,6 +1013,8 @@
 
         return ps;
     })();
+
+    /***************************************** EVENT ******************************************/
     /**
      * 事件
      * @namespace Cora.event
@@ -901,7 +1047,7 @@
             reg: function (target, type, callback) {
                 var eventName = target.addEventListener ? type : 'on' + type;
                 if(target.addEventListener){
-                    target.addEventListener(eventName, function(event){_callback(event, callback);}, false);
+                    target.addEventListener(eventName, function(event){_callback(event, callback);});
                 }else{
                     target.attachEvent(eventName, function(event){_callback(event, callback);});
                 }
@@ -916,13 +1062,15 @@
             unreg: function (target, type, callback) {
                 var eventName = target.removeEventListener ? type : 'on' + type;
                 if(target.removeEventListener){
-                    target.removeEventListener(eventName, function(event){_callback(event, callback)}, false);
+                    target.removeEventListener(eventName, function(event){_callback(event, callback);});
                 }else{
-                    target.detachEvent(eventName, function(event){_callback(event, callback)});
+                    target.detachEvent(eventName, function(event){_callback(event, callback);});
                 }
             }
         }
     })();
+
+    /***************************************** DOM ******************************************/
     /**
      * @lends Cora.prototype
      */
@@ -1076,17 +1224,19 @@
 				//   });
 				//   return cssKv;
 				// },
-
+        /**
+         * 为元素添加样式
+         * @method Cora#css
+         * @param {string} key css key
+         * @param {string} value css value
+         * @param {object} key key-value pairs
+         */
         css: function(key, value) {
             var args = arguments,
                 setter;
-
-            // Get attribute
             if (Cora.isString(key) && args.length === 1) {
                 return this[0] && window.getComputedStyle(this[0])[key];
             }
-
-            // Set attributes
             if (args.length === 2) {
                 setter = function(el) {
                     el.style[key] = value;
@@ -1098,11 +1248,16 @@
                     });
                 };
             }
-
             this.each(function(item) {
                 setter(item);
             });
-
+            return this;
+        },
+        /**
+         * 为元素添加样式
+         * @method Cora#animate
+         */
+        animate: function() {
             return this;
         },
         /** 
@@ -1165,11 +1320,12 @@
         on: function(eventType, selector, callback){
         	var _t = this;
             var _cb = function(event){
+                console.log('memory test');
                 var retCb = callback(event, event.target);
                 if(retCb === false){     //仅申明返回false时阻止默认行为
                     event.preventDefault();
                 }
-            }
+            };
 
         	//没有selector时为每个元素绑定事件
         	if(Cora.isFunction(selector)){
@@ -1195,22 +1351,18 @@
          * 为cora元素绑定事件
          * @method Cora#on
          * @param {eventType} eventType 触发的事件类型
-         * @param {string} selector 待绑定的元素的选择器
          * @param {function} callback 触发回调
-         * @todo 1: dom.contains	2: fn.bind(sth)
          */
         off: function(eventType, callback){
-    		this.each(function (item) {
-                console.log(item, 'item');
-    			Cora.event.unreg(item, eventType, callback);
-    		});
-    		return this;
+            Cora.event.unreg(this[0][0], eventType, callback);
+            return this;
     	}
-        
 
     };
 
     Cora.prototype.init.prototype = Cora.prototype;
+
+    /************************************* Template ****************************************/
     /*
      *@see https://github.com/olado/doT
      *Laura Doktorova https://github.com/olado/doT Licensed under the MIT license
@@ -1225,7 +1377,106 @@
 
     Cora.extend(Cora, doT);
 
-    //----------模块化组件注册(UI组件)
+    /************************************* Animation ****************************************/
+    (function(w) {
+        w.requestAnimationFrame = window.requestAnimationFrame;
+        w.cancelAnimationFrame = window.cancelAnimationFrame;
+
+        var lastTime = 0;
+        var vendors = ['webkit', 'moz'];
+        for(var x = 0; x < vendors.length && !w.requestAnimationFrame; ++x) {
+            w.requestAnimationFrame = w[vendors[x]+'RequestAnimationFrame'];
+            w.cancelAnimationFrame =
+                w[vendors[x]+'CancelAnimationFrame'] || w[vendors[x]+'CancelRequestAnimationFrame'];
+        }
+
+        if (!w.requestAnimationFrame)
+            w.requestAnimationFrame = function(callback) {
+                var currTime = new Date().getTime();
+                var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                var id = w.setTimeout(function() { callback(currTime + timeToCall); },
+                    timeToCall);
+                lastTime = currTime + timeToCall;
+                return id;
+            };
+
+        if (!w.cancelAnimationFrame)
+            w.cancelAnimationFrame = function(id) {
+                clearTimeout(id);
+            };
+    }(Cora));
+
+    /**
+     * Tween.js
+     * @method Cora.tween.Linear：无缓动效果；
+     * @method Cora.tween.Quadratic：二次方的缓动（t^2）；
+     * @method Cora.tween.Cubic：三次方的缓动（t^3）；
+     * @method Cora.tween.Quartic：四次方的缓动（t^4）；
+     * @method Cora.tween.Quintic：五次方的缓动（t^5）；
+     * @method Cora.tween.Sinusoidal：正弦曲线的缓动（sin(t)）；
+     * @method Cora.tween.Exponential：指数曲线的缓动（2^t）；
+     * @method Cora.tween.Circular：圆形曲线的缓动（sqrt(1-t^2)）；
+     * @method Cora.tween.Elastic：指数衰减的正弦曲线缓动；
+     * @method Cora.tween.Back：超过范围的三次方缓动（(s+1)*t^3 - s*t^2）；
+     * @method Cora.tween.Bounce：指数衰减的反弹缓动。
+
+     * @method Cora.tween.每个效果都分三个缓动方式（方法），分别是：
+     * @method Cora.tween.easeIn：从0开始加速的缓动；
+     * @method Cora.tween.easeOut：减速到0的缓动；
+     * @method Cora.tween.easeInOut：前半段从0开始加速，后半段减速到0的缓动。
+     * @method Cora.tween.其中Linear是无缓动效果，没有以上效果。
+     *
+     * @param {number} t: current（当前时间）；
+     * @param {number} b: beginning value（初始值）；
+     * @param {number} c: change in value（变化量）；
+     * @param {number} d: duration（持续时间）。
+     */
+    Math.tween={Linear:function(e,a,g,f){return g*e/f+a},Quad:{easeIn:function(e,a,g,f){return g*(e/=f)*e+a},easeOut:function(e,a,g,f){return -g*(e/=f)*(e-2)+a},easeInOut:function(e,a,g,f){if((e/=f/2)<1){return g/2*e*e+a}return -g/2*((--e)*(e-2)-1)+a}},Cubic:{easeIn:function(e,a,g,f){return g*(e/=f)*e*e+a},easeOut:function(e,a,g,f){return g*((e=e/f-1)*e*e+1)+a},easeInOut:function(e,a,g,f){if((e/=f/2)<1){return g/2*e*e*e+a}return g/2*((e-=2)*e*e+2)+a}},Quart:{easeIn:function(e,a,g,f){return g*(e/=f)*e*e*e+a},easeOut:function(e,a,g,f){return -g*((e=e/f-1)*e*e*e-1)+a},easeInOut:function(e,a,g,f){if((e/=f/2)<1){return g/2*e*e*e*e+a}return -g/2*((e-=2)*e*e*e-2)+a}},Quint:{easeIn:function(e,a,g,f){return g*(e/=f)*e*e*e*e+a},easeOut:function(e,a,g,f){return g*((e=e/f-1)*e*e*e*e+1)+a},easeInOut:function(e,a,g,f){if((e/=f/2)<1){return g/2*e*e*e*e*e+a}return g/2*((e-=2)*e*e*e*e+2)+a}},Sine:{easeIn:function(e,a,g,f){return -g*Math.cos(e/f*(Math.PI/2))+g+a},easeOut:function(e,a,g,f){return g*Math.sin(e/f*(Math.PI/2))+a},easeInOut:function(e,a,g,f){return -g/2*(Math.cos(Math.PI*e/f)-1)+a}},Expo:{easeIn:function(e,a,g,f){return(e==0)?a:g*Math.pow(2,10*(e/f-1))+a},easeOut:function(e,a,g,f){return(e==f)?a+g:g*(-Math.pow(2,-10*e/f)+1)+a},easeInOut:function(e,a,g,f){if(e==0){return a}if(e==f){return a+g}if((e/=f/2)<1){return g/2*Math.pow(2,10*(e-1))+a}return g/2*(-Math.pow(2,-10*--e)+2)+a}},Circ:{easeIn:function(e,a,g,f){return -g*(Math.sqrt(1-(e/=f)*e)-1)+a},easeOut:function(e,a,g,f){return g*Math.sqrt(1-(e=e/f-1)*e)+a},easeInOut:function(e,a,g,f){if((e/=f/2)<1){return -g/2*(Math.sqrt(1-e*e)-1)+a}return g/2*(Math.sqrt(1-(e-=2)*e)+1)+a}},Elastic:{easeIn:function(g,e,k,j,f,i){var h;if(g==0){return e}if((g/=j)==1){return e+k}if(typeof i=="undefined"){i=j*0.3}if(!f||f<Math.abs(k)){h=i/4;f=k}else{h=i/(2*Math.PI)*Math.asin(k/f)}return -(f*Math.pow(2,10*(g-=1))*Math.sin((g*j-h)*(2*Math.PI)/i))+e},easeOut:function(g,e,k,j,f,i){var h;if(g==0){return e}if((g/=j)==1){return e+k}if(typeof i=="undefined"){i=j*0.3}if(!f||f<Math.abs(k)){f=k;h=i/4}else{h=i/(2*Math.PI)*Math.asin(k/f)}return(f*Math.pow(2,-10*g)*Math.sin((g*j-h)*(2*Math.PI)/i)+k+e)},easeInOut:function(g,e,k,j,f,i){var h;if(g==0){return e}if((g/=j/2)==2){return e+k}if(typeof i=="undefined"){i=j*(0.3*1.5)}if(!f||f<Math.abs(k)){f=k;h=i/4}else{h=i/(2*Math.PI)*Math.asin(k/f)}if(g<1){return -0.5*(f*Math.pow(2,10*(g-=1))*Math.sin((g*j-h)*(2*Math.PI)/i))+e}return f*Math.pow(2,-10*(g-=1))*Math.sin((g*j-h)*(2*Math.PI)/i)*0.5+k+e}},Back:{easeIn:function(e,a,h,g,f){if(typeof f=="undefined"){f=1.70158}return h*(e/=g)*e*((f+1)*e-f)+a},easeOut:function(e,a,h,g,f){if(typeof f=="undefined"){f=1.70158}return h*((e=e/g-1)*e*((f+1)*e+f)+1)+a},easeInOut:function(e,a,h,g,f){if(typeof f=="undefined"){f=1.70158}if((e/=g/2)<1){return h/2*(e*e*(((f*=(1.525))+1)*e-f))+a}return h/2*((e-=2)*e*(((f*=(1.525))+1)*e+f)+2)+a}},Bounce:{easeIn:function(e,a,g,f){return g-Tween.Bounce.easeOut(f-e,0,g,f)+a},easeOut:function(e,a,g,f){if((e/=f)<(1/2.75)){return g*(7.5625*e*e)+a}else{if(e<(2/2.75)){return g*(7.5625*(e-=(1.5/2.75))*e+0.75)+a}else{if(e<(2.5/2.75)){return g*(7.5625*(e-=(2.25/2.75))*e+0.9375)+a}else{return g*(7.5625*(e-=(2.625/2.75))*e+0.984375)+a}}}},easeInOut:function(e,a,g,f){if(e<f/2){return Tween.Bounce.easeIn(e*2,0,g,f)*0.5+a}else{return Tween.Bounce.easeOut(e*2-f,0,g,f)*0.5+g*0.5+a}}}};
+
+    /**
+     * 在Corajs上扫描全局注册组件或插件
+     * @method Cora.Anim
+     * @param {element} $elem 引起动画的方法
+     * @param {object} cssOpts 引起动画的方法
+     * @example
+     * @todo 实现常规的快捷接口，实现动画的事件触发，实现动画的流程控制
+     */
+    Cora.fx = (function(){
+        var intProps = function(){
+
+        };
+        //动画初始状态
+        var getInitFx = function(props){
+
+        };
+
+        //动画终止状态
+        var getEndFx = function(props){
+            //将props处理成动画需要的数据;
+            return props;
+        };
+
+        //动画中间态时的对象值
+        var getProgressFx = function(props, duration){
+            var cssProgress = {};
+            return cssProgress;
+        };
+
+        var doFx = function($elem,  props, animOpts){
+            var reqAniFrame = Cora.requestAnimationFrame;
+            animOpts.effect = animOpts.effect || 'Linear';
+
+            var repeatFn = function(){
+                $elem.css(props);
+                reqAniFrame(repeatFn);
+            };
+            reqAniFrame(repeatFn);
+        };
+        return doFx;
+    })();
+
+
+    /********************************** 模块化组件注册 **********************************/
     (function($) {
         /**
          * 在Corajs上扫描全局注册组件或插件
@@ -1236,9 +1487,9 @@
          */
         $.widgetize = function(widget) {
             var $widget = $(widget),
-            widgetName = $widget.attr('widget'),
-            widgetArgs = JSON.parse($widget.attr('data-options')),
-            opts = widgetArgs ? widgetArgs : {};
+                widgetName = $widget.attr('widget'),
+                widgetArgs = JSON.parse($widget.attr('data-options')),
+                opts = widgetArgs ? widgetArgs : {};
 
             $.log('执行插件: [' + widgetName + ']', {type: 'info'});
             try {
@@ -1269,16 +1520,15 @@
          * @param {element} elem 卸载组件所指定的元素
          */
         $.unWidget = function(elem){
-        	// 卸载已缓存实例
-        	$.data.del(elem);
-        	//卸载已运行实例
-        	elem.innerHTML = '';
+            // 卸载已缓存实例
+            $.data.del(elem);
+            //卸载已运行实例
+            elem.innerHTML = '';
         }
 
     })(Cora);
 
-
-    //----------AMD模块化支持
+    /************************************* AMD ****************************************/
     if (typeof module === "object" && module && typeof module.exports === "object") {
         module.exports = Cora;
     } else if (typeof define === "function" && define.amd) {
@@ -1294,3 +1544,4 @@
 
 
 //参考 jbonejs doT
+//动画模块
