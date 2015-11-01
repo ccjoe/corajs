@@ -350,10 +350,17 @@
             }
             return paramstr.remove('right');
         };
-
+        /**
+         * 将object 为url设置新增serach
+         * @method Cora.url.set
+         * @param {string} url 被操作的url
+         * @param {string} kvpOrk object or string key
+         * @param {string} value  value
+         * @return {object} 设置search的url
+         */
         var setUrl = function (url, kvpOrk, value) {
             var kvpair = Cora.isObject(kvpOrk) ? setParams(kvpOrk) : (kvpOrk + '=' + value);
-            return url.replace(re.search, function (str, $0, $1, $2) {
+            return url.replace(re.search, function (str, $0, $1) {
                 return ($0 ? $0 : '') + '?' + ($1 ? $1 + '&' : '') + kvpair;
             });
         };
@@ -731,12 +738,14 @@
             return this.replace(/\s+$/g, '');
         },
         /**
-         * 字符串中间去空格,但最少保留一位空格
+         * 字符串去空格,但最少保留一位空格
          * @method String#mtrim
+         * @params {boolean} remain1space
          * @return {string} 返回处理后的字符串
          */
-        mtrim: function() {
-            return this.replace(/\s+/g, ' ')
+        mtrim: function (remain1space) {
+            remain1space = remain1space ? ' ' : '';
+            return this.replace(/\s+/g, remain1space);
         },
         /**
          * 字符串去字符

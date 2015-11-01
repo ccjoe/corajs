@@ -73,10 +73,18 @@ describe("检测类型相关", function(){
 });
 
 describe("String扩展方法测试", function(){
-    it("String# 字符串测试", function () {
-        console.log('test'.pad(5));
-        console.log('test'.pad(5,0));
-        console.log('teststr'.pad(10,0,'right'));
+    it("String#pad字符串测试", function () {
+        expect('test'.pad(5) === ' test').toBe(true);
+        expect('test'.pad(5, 0) === '0test').toBe(true);
+        expect('teststr'.pad(10, 0, 'right') === 'teststr000').toBe(true);
+    });
+
+    it("String#trim相关字符串测试", function () {
+        expect(' te st  '.trim() === 'te st').toBe(true);
+        expect(' te st '.ltrim() === 'te st ').toBe(true);
+        expect(' te st    '.rtrim() === ' te st').toBe(true);
+        expect(' te st '.mtrim() === 'test').toBe(true);
+        expect(' te st      test   '.mtrim(true) === ' te st test ').toBe(true);
     });
 
     it("String#remove 字符串测试", function () {
