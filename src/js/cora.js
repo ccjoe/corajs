@@ -252,7 +252,7 @@
         var re = {
             url: /((http|https):\/\/)?((\w+\.)+\w+)?((\/\w+)+)?\/?\??((\w+=\w+&?)+)?#?(.+)?/g,
             kv : /(\w+)=(\w+)/g,
-            search: /[^\?]+\??((\w+=\w+&?)+)?/,     //[^\?]+ 除?外所有
+            search: /([^\?]+)?\??((\w+=\w+&?)+)?/,     //[^\?]+ 除?外所有
             path: /.+((\/\w+)+)?/
         };
 
@@ -263,7 +263,7 @@
          * @return {object} 返回键值对对象
          * @example  hashsearch=test; => {hashsearch: test}
          */
-        var getKv = function (kvp){
+        var getParams = function (kvp) {
             if(!kvp) return {};
             var okvp = {},  kvpi; //object key val pairs;
             var kvpArr = kvp.match(re.kv);
@@ -284,8 +284,8 @@
          */
         var getHashSearch = function (hash, isParse){
             if(!hash) return isParse ? {} : '';
-            var hashSchStr = re.search.exec(hash)[1];
-            return isParse ? getKv(hashSchStr) : hashSchStr;
+            var hashSchStr = re.search.exec(hash)[2];
+            return isParse ? getParams(hashSchStr) : hashSchStr;
         };
 
         /**
@@ -322,102 +322,47 @@
             re.url.lastIndex = 0;
             var uri = re.url.exec(url);
             var hashfull = uri[9]; path = uri[5] || ''; search = uri[7] || '';
+            //console.log(uri, 'uri');
             return {
                 protocal: uri[2],
                 domain: uri[3],
                 path: isParse ? path.substring(1).split('/') : path,
-                search: isParse ? getKv(search) :search,
+                search: isParse ? getParams(search) : search,
                 hash: hashfull,
                 hashPath: getHashPath(hashfull, isParse) ,
                 hashsearch: getHashSearch(hashfull, isParse)
             };
         };
+        /**
+         * 将object 处理为url 相关部件search
+         * @method Cora.url.setParam
+         * @param {object} obj 将object对象转化为url参数字符串
+         * @param {string} equalStr key与value间的相等字符, 默认为 '='
+         * @param {string} joinStr key-value key-value间的连接符 默认为 '&'
+         * @return {object} search
+         */
+        var setParams = function (obj, equalStr, joinStr) {
+            var paramstr = '', equalStr = equalStr || '=';
+            joinStr = joinStr || '&';
 
-        //var getUrls = function (url, keyOrStr, returnObj) {
-        //    url = decodeURIComponent(url); //对url进行decodeURIComponen解码
-        //    var hashIndex = url.indexOf('#'), hasHash = hashIndex !== -1,
-        //        searchIndex = url.indexOf('?'),
-        //        hasSearch = !hasHash ?
-        //                    searchIndex !== -1 : //hash里有param的情况时也会有'?',不算search算hashsearch
-        //                    (searchIndex !== -1 && searchIndex<hashIndex);
-        //    var _fullHash = getFullHash(),
-        //        _search = getSearch();
-        //
-        //    var hashSearchIndex = _fullHash.indexOf('?'),
-        //        hasHashSearch = hashSearchIndex !== -1;
-        //
-        //    var _hash = getHash();
-        //
-        //    //认为hash后面所有的串都是hash
-        //    function getFullHash(){
-        //        return !hasHash ? '' : url.substring(hashIndex+1);
-        //    }
-        //
-        //    //仅#后面？前的串
-        //    function getHash(){
-        //        return !hasHashSearch ? _fullHash : _fullHash.substring(0, hashSearchIndex);
-        //    }
-        //
-        //    function getSearch(){
-        //        return !hasSearch ? '' : ( !hasHash ? url.substring(searchIndex+1) : url.substring(searchIndex+1, hashIndex));
-        //    }
-        //
-        //    function getPath(){
-        //        //url.replace(/\S*((\/\w)+)/, function(){
-        //        //
-        //        //});
-        //    }
-        //
-        //    function getHashSearch(){
-        //        return !hasHashSearch ? '' :  _fullHash.substring(hashSearchIndex+1);
-        //    }
-        //
-        //    function getParams(str){
-        //        var kv, paramsObj={},params = str.split('&');
-        //        for(var i=0; i<params.length; i++){
-        //            kv = params[i].split('=');
-        //            paramsObj[kv[0]] = kv[1];
-        //        }
-        //        return paramsObj;
-        //    }
-        //    //console.log(_hash, _fullHash, _search, getHashSearch(), '............................');
-        //    switch (keyOrStr) {
-        //        case 'hash':
-        //            return _hash; break;
-        //        case 'search':
-        //            return returnObj ? getParams(_search) :  _search; break;
-        //        case 'hashsearch':
-        //            return returnObj ? getParams(getHashSearch()) : getHashSearch(); break;
-        //        case 'host':
-        //            return host; break;
-        //        case 'domain':
-        //            return domain; break;
-        //        default:
-        //            return getParams(keyOrStr);
-        //    }
-        //};
-        var setUrl = function (url, keyValueOrObj, value) {
-            var kvpair;
-            if (typeof keyValueOrObj === 'string') {
-                kvpair = keyValueOrObj + '=' + value;
-                if (!~url.indexOf('?')) {
-                    return url + '?' + kvpair;
-                } else {
-                    return url + '&' + kvpair;
-                }
-            } else if (typeof keyValueOrObj === 'object') {
-                kvpair = $.param(keyValueOrObj);
-                if (!~url.indexOf('?')) {
-                    return url + '?' + kvpair;
-                } else {
-                    return url + '&' + kvpair;
-                }
+            for (var i in obj) {
+                paramstr += i + equalStr + obj[i] + joinStr;
             }
+            return paramstr.remove('right');
         };
+
+        var setUrl = function (url, kvpOrk, value) {
+            var kvpair = Cora.isObject(kvpOrk) ? setParams(kvpOrk) : (kvpOrk + '=' + value);
+            return url.replace(re.search, function (str, $0, $1, $2) {
+                return ($0 ? $0 : '') + '?' + ($1 ? $1 + '&' : '') + kvpair;
+            });
+        };
+
         return {
             get: getUrl,
             set: setUrl,
-            getParams: getKv,
+            getParams: getParams,
+            setParams: setParams,
             getHashSearch: getHashSearch,
             getHashPath: getHashPath
         };
@@ -794,8 +739,33 @@
             return this.replace(/\s+/g, ' ')
         },
         /**
+         * 字符串去字符
+         * @method String#remove
+         * @param {string} len 当len为非left,right字符串时为指定要去除的字符，为left,right时去掉相应位置的单字符，为数字时去除相应宽度字符
+         * @param {number} lr 当len为长度时，lr指定left,还是right去除
+         * @return {string} 返回处理后的字符串
+         */
+        remove: function (len, lr) {
+            if (Cora.isString(len) && len !== 'left' && len !== 'right') {
+                return this.split(len).join('');
+            }
+            if (len === 'left') {
+                return this.substring(1);
+            }
+            if (len === 'right') {
+                return this.substring(0, this.length - 1);
+            }
+            len = len || 1;
+            lr = lr || 'left';
+            return lr === 'left' ? this.substring(len) : this.substring(0, this.length - len);
+        },
+        /**
          * 字符串补位
-         * @method String#lpad
+         * @method String#pad
+         * @param {number} width 补位数
+         * @param {string} padstr 补位的字符
+         * @param {string} lr left 还是 right补位
+         * @default lr 为 left
          * @return {string} 返回处理后的字符串
          */
         pad: function(width, padstr, lr){
@@ -803,10 +773,10 @@
             if(ellilen<1){
                 return this;
             }
+            lr = lr || 'left';
+            padstr = (padstr === void 0) ? ' ' : String(padstr);
 
-            lr = lr || 'left';padstr = (padstr===void 0)?' ':String(padstr);
             var padstrlen = padstr.length;
-
             for(var endstr='',i=0; i<ellilen/padstrlen; i++){
                 endstr+=padstr;
             }

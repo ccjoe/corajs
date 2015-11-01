@@ -73,10 +73,21 @@ describe("检测类型相关", function(){
 });
 
 describe("String扩展方法测试", function(){
-    it("String#pad 字符串测试", function(){
+    it("String# 字符串测试", function () {
         console.log('test'.pad(5));
         console.log('test'.pad(5,0));
         console.log('teststr'.pad(10,0,'right'));
+    });
+
+    it("String#remove 字符串测试", function () {
+        expect('abcdefg'.remove() === 'bcdefg').toBe(true);
+        expect('abcdefg'.remove(2) === 'cdefg').toBe(true);
+        expect('abcdefg'.remove(7) === '').toBe(true);
+        expect('abcdefg'.remove('left') === 'bcdefg').toBe(true);
+        expect('abcdefg'.remove('right') === 'abcdef').toBe(true);
+        expect('abcdefg'.remove(3, 'left') === 'defg').toBe(true);
+        expect('abcdefg'.remove(3, 'right') === 'abcd').toBe(true);
+        expect('abcdefg'.remove('cde') === 'abfg').toBe(true);
     });
 
     it("String#countdownFormat", function(){
@@ -170,5 +181,14 @@ describe("Cora.url 测试获取url对象", function(){
         }
         console.log('----------------------------');
 
+        for (var k = 0; k < urlarr.length; k++) {
+            var item = urlarr[k];
+            console.log(Cora.url.set(item, {seturl1: 1, seturl2: 2}));
+        }
+        console.log('----------------------------');
+        //console.log(Cora.url.setParams({a:1,b:2}));
+
+        console.log(Cora.url.setParams({seturl1: 1, seturl2: 2}));
+        console.log(Cora.url.setParams({seturl1: 1, seturl2: 2}, ':', ','));
     });
 });
