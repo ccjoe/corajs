@@ -74,7 +74,7 @@
             }
         }, 
 
-        makeTimer: function (ithis, opts){
+        makeTimer: function (ithis){
             var s = this.timerComponents();
             var domhms = s.ten+s.ten+s.div+s.six+s.ten+s.div+s.six+s.ten;
             var dommills = s.div + s.ten + s.ten + s.ten;
@@ -87,11 +87,10 @@
             });
             ithis.addCssBlock(s.css);
         }      
-    }
+    };
     /**
      * 初始化执行插件 this没有执行环境时指向window, call后执行在Timer对象上
      * @method initTimer
-     * @this {widnow} 
      */
     function initTimer(opts) {
         init.makeTimer(this.$dom, opts);
@@ -113,15 +112,15 @@
          * 最终执行于Timer实例的参列
          * @member {Object} Timer~opts
          */
-        this.opts = $.extend({}, defaultOptions, opts); //再混合一次的目的是防止使用window.Timer调用
+        this.opts = $.extend({},  opts); //再混合一次的目的是防止使用window.Timer调用 defaultOptions,
         /**
          * 插件根元素  
          * @member {element} Timer~$dom
          * @alias ithis
          */
         this.$dom = $(ithis); //this.$dom指向单个实例的根元素
-        initTimer.call(this, this.opts); //改变原this到当前timer对象
-    };
+        initTimer.call(this); //改变原this到当前timer对象
+    }
         
 
     /** @lends Timer.prototype */
@@ -169,7 +168,7 @@
             //遍历匹配的元素集合
             var args = [].slice.call(arguments, 1);
             //this指向jQuery对象
-            return this.each(function(item, i) {
+            return this.each(function(item) {
                 //判断是否实例化过
                 var ui = $.data.get(item);
                 if (!ui) {
@@ -194,12 +193,11 @@
      * @property {string} type -timer类型 timer-stopwatch timer-countdown timer-show
      * @property {function} hideTimer -切换内容        
      * @default
-     * @augments defaultOptions
      */
     var defaultOptions = {
         type: 'timer-count',
         show: ['hour', 'minute', 'second', 'milisecond'],
-    }
+    };
 
     /**
      * B: 在框架中实现注册组件或插件
@@ -216,4 +214,4 @@
      * @example 组件使用方式 new Timer(opts, item);
      */
     window.Timer = Timer;
-})(Cora)
+})(Cora);

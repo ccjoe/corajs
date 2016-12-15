@@ -1,0 +1,15 @@
+{
+  "name": "corajs",
+  "version": "0.0.1",
+  "devDependencies": {
+    "karma": "^0.13.14",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-coverage": "^0.5.3",
+    "karma-jasmine": "^0.3.6",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "phantomjs": "^1.9.18"
+  },
+  "execute": {
+    "jsdoc": "jsdoc -t ./ -c  'node_modules/jaguarjs-jsdoc/conf.json' ./src/js/jc.js"
+  }
+}
