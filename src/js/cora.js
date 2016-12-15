@@ -250,8 +250,8 @@
     /**--------------- URL Parse ------------------*/
     Cora.url = (function(){
         var re = {
-            url: /((http|https):\/\/)?((\w+\.)+\w+)?((\/\w+)+)?\/?\??((\w+=\w+&?)+)?#?(.+)?/g,
-            kv : /(\w+)=(\w+)/g,
+            url: /((http|https):\/\/)?((\w+\.)+\w+)?(:\d+)?((\/\w+)+)?\/?\??((\w+=\w+&?)+)?#?(.+)?/g,
+            kv : /(\w+)=([^&#]+)/g,
             search: /([^\?]+)?\??((\w+=\w+&?)+)?/,     //[^\?]+ 除?外所有
             path: /.+((\/\w+)+)?/
         };
@@ -266,12 +266,12 @@
         var getParams = function (kvp) {
             if(!kvp) return {};
             var okvp = {},  kvpi; //object key val pairs;
-            var kvpArr = kvp.match(re.kv);
+            var kvpArr = encodeURI(kvp).match(re.kv);
             if(!kvpArr || !kvpArr.length) return {};
             kvpArr.forEach(function(i){
                 re.kv.lastIndex = 0;
                 kvpi = re.kv.exec(i);
-                okvp[kvpi[1]] = kvpi[2];
+                okvp[kvpi[1]] = decodeURI(kvpi[2]);
             });
             return okvp;
         };
@@ -321,11 +321,12 @@
         var getUrl  = function (url, isParse){
             re.url.lastIndex = 0;
             var uri = re.url.exec(url);
-            var hashfull = uri[9]; path = uri[5] || ''; search = uri[7] || '';
+            var hashfull = uri[10], path = uri[6] || '', search = uri[8] || '';
             //console.log(uri, 'uri');
             return {
                 protocal: uri[2],
                 domain: uri[3],
+                port: uri[5],
                 path: isParse ? path.substring(1).split('/') : path,
                 search: isParse ? getParams(search) : search,
                 hash: hashfull,
@@ -857,6 +858,24 @@
     		return td;
     	}
     });
+    //(new Date()).Format('yy-MM-dd hh-mm-ss -q -S')  "16-05-11 17-07-09 -2(季度) -486(millSecond)"
+    Date.prototype.Format = function(fmt){ //author: meizz
+      var o = {   
+        "M+" : this.getMonth()+1,                 //月份
+        "d+" : this.getDate(),                    //日
+        "h+" : this.getHours(),                   //小时
+        "m+" : this.getMinutes(),                 //分
+        "s+" : this.getSeconds(),                 //秒
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度
+        "S"  : this.getMilliseconds()             //毫秒
+      };   
+      if(/(y+)/.test(fmt))   
+        fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));   
+      for(var k in o)   
+        if(new RegExp("("+ k +")").test(fmt))   
+      fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
+      return fmt;   
+    } 
 
     Cora.extend(Date.prototype, {
         /**
@@ -1518,7 +1537,6 @@
     } else if (typeof window === "object" && typeof window.document === "object") {
         window.Cora = window.$ = Cora;
     }
-
 })();
 
 

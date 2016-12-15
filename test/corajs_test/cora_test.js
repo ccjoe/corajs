@@ -152,7 +152,9 @@ describe("Cora.PS 发布订阅对象测试", function(){
 });
 
 describe("Cora.url 测试获取url对象", function(){
-    var urlarr = ['http://www.test.com/a/b/c?test=1&kk=2#hash/p1/p2/p3?htest=1&hh=2',
+    var urlarr = ['http://www.test.com:8080/a/b/c?test=1&kk=2#hash/p1/p2/p3?htest=1&hh=2',
+        'http://www.test.com/a/b/c?test=1&kk=2#hash/p1/p2/p3?htest=1&hh=2',
+        'http://localhost:9000/a/b/c?abc/bcd/cde&test=1&kk=2#hash/p1/p2/p3?htest=1&hh=2',
         'http://www.test.com/a/b/c/?test=1&kk=2#hash/p1/p2/p3',
         'http://www.test.com/a/b/c?test=1&kk=2#hash?htest=1&hh=2',
         'http://www.test.com/a/b/c/?test=1&kk=2#hash',
@@ -194,7 +196,6 @@ describe("Cora.url 测试获取url对象", function(){
             console.log(Cora.url.set(item, {seturl1: 1, seturl2: 2}));
         }
         console.log('----------------------------');
-        //console.log(Cora.url.setParams({a:1,b:2}));
 
         console.log(Cora.url.setParams({seturl1: 1, seturl2: 2}));
         console.log(Cora.url.setParams({seturl1: 1, seturl2: 2}, ':', ','));
